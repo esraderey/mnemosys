@@ -1,18 +1,18 @@
 """
-MNEME - Motor de Memoria Neural Mórfica
+MNEME - Motor de Memoria Neural Mórfica v2.0
 
-Sistema avanzado de memoria computacional con síntesis determinista.
+Sistema avanzado de memoria computacional con síntesis determinista,
+optimización en paralelo, seguridad avanzada y monitoreo de rendimiento.
 """
 
 from .mneme_core import (
     ZSpace,
     ZDescriptor,
-    ZGen,
+    ZAddr,
     MnemeConfig,
     CompressionLevel,
     SecurityLevel,
     SerializationFormat,
-    SecurityLevel as SecurityLevel,
     TensorEncryptionMode,
     KeyRotationPolicy,
     StorageBackend,
@@ -21,7 +21,13 @@ from .mneme_core import (
     ContextSimilarityMethod,
     ContextClusteringMethod,
     SecurityError,
-    MnemeError
+    ValidationError,
+    StorageError,
+    MnemeError,
+    # Nuevas funcionalidades de seguridad
+    GranularLockManager,
+    LazyTensor,
+    AdaptiveCache
 )
 
 from .mneme_torch import (
@@ -29,21 +35,34 @@ from .mneme_torch import (
     ZConv2d,
     ZAttention,
     ZTransformerBlock,
+    ZParameter,
     compress_model,
     get_compression_stats,
+    get_model_performance_stats,
+    optimize_model_memory,
+    get_system_metrics,
+    get_health_status,
+    optimize_system,
     CompressionConfig
 )
 
-from .mneme_security import (
+from .mneme_security_core import (
     SecurityManager,
-    SecurityLevel as SecurityLevelEnum,
-    SecureDescriptor
+    SecurityConfig,
+    InputValidator,
+    SecureSerializer,
+    create_secure_config,
+    validate_tensor_safe,
+    secure_tensor_serialize,
+    secure_tensor_deserialize
 )
 
-from .mneme_optimization import (
-    MNEMEOptimizer,
-    OptimizationLevel,
-    PerformanceProfiler
+from .mneme_storage_core import (
+    SecureStorageBackend,
+    SecureCache,
+    StorageConfig,
+    create_secure_storage,
+    create_secure_cache
 )
 
 __version__ = "2.0.0"
@@ -54,7 +73,7 @@ __all__ = [
     # Core classes
     "ZSpace",
     "ZDescriptor", 
-    "ZGen",
+    "ZAddr",
     "MnemeConfig",
     
     # Enums
@@ -74,21 +93,41 @@ __all__ = [
     "ZConv2d", 
     "ZAttention",
     "ZTransformerBlock",
+    "ZParameter",
     "compress_model",
     "get_compression_stats",
+    "get_model_performance_stats",
+    "optimize_model_memory",
+    "get_system_metrics",
+    "get_health_status",
+    "optimize_system",
     "CompressionConfig",
     
     # Security
     "SecurityManager",
-    "SecurityLevelEnum",
-    "SecureDescriptor",
+    "SecurityConfig",
+    "InputValidator",
+    "SecureSerializer",
+    "create_secure_config",
+    "validate_tensor_safe",
+    "secure_tensor_serialize",
+    "secure_tensor_deserialize",
     
-    # Optimization
-    "MNEMEOptimizer",
-    "OptimizationLevel",
-    "PerformanceProfiler",
+    # Storage
+    "SecureStorageBackend",
+    "SecureCache",
+    "StorageConfig",
+    "create_secure_storage",
+    "create_secure_cache",
+    
+    # Advanced features
+    "GranularLockManager",
+    "LazyTensor",
+    "AdaptiveCache",
     
     # Exceptions
     "SecurityError",
+    "ValidationError",
+    "StorageError",
     "MnemeError"
 ]

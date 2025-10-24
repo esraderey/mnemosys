@@ -1,4 +1,4 @@
-# Actualización de Cifrado de Tensores y Contexto Mejorado - MNEME
+# Actualización de Cifrado de Tensores y Contexto Mejorado - MNEME v2.0
 
 ## Resumen de Cambios
 

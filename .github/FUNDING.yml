@@ -1,0 +1,39 @@
+# MNEME v2.0 Funding Configuration (Safetensors + Locks Granulares)
+# This file configures funding options for the project
+
+# Individual sponsors
+github: [esraderey, raulcruzacosta]
+
+# PayPal funding
+custom:
+  - type: 'PayPal'
+    url: 'https://paypal.me/Esraderey'
+
+# Commercial licensing
+commercial:
+  - type: 'Commercial License'
+    url: 'mailto:msc.framework@gmail.com?subject=Commercial License Request'
+  - type: 'Enterprise License'
+    url: 'mailto:msc.framework@gmail.com?subject=Enterprise License Request'
+  - type: 'Production License'
+    url: 'mailto:msc.framework@gmail.com?subject=Production License Request'
+
+# Research and academic support
+academic:
+  - type: 'Research Collaboration'
+    url: 'mailto:msc.framework@gmail.com?subject=Research Collaboration'
+  - type: 'Academic License'
+    url: 'mailto:msc.framework@gmail.com?subject=Academic License Request'
+  - type: 'Student Support'
+    url: 'mailto:msc.framework@gmail.com?subject=Student Support Request'
+
+# Community support
+community:
+  - type: 'Community Support'
+    url: 'https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/discussions'
+  - type: 'Bug Reports'
+    url: 'https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues'
+  - type: 'Feature Requests'
+    url: 'https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues/new?template=feature_request.md'
+  - type: 'Security Reports'
+    url: 'https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues/new?template=security_report.md'

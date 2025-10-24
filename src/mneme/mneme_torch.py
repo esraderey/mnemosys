@@ -1,6 +1,6 @@
 """
-MNEME PyTorch Integration
-Integración avanzada con PyTorch para compresión transparente de modelos
+MNEME PyTorch Integration - Actualizado
+Integración avanzada con PyTorch que utiliza las funcionalidades del core
 """
 
 import torch
@@ -8,7 +8,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import Optional, Dict, Any, List, Tuple, Union
 import weakref
-from mneme_core import ZSpace, ZDescriptor, DecompType, CompressionLevel
+from .mneme_core import (
+    ZSpace, ZDescriptor, DecompType, CompressionLevel, MnemeConfig
+)
 import logging
 import time
 from contextlib import contextmanager
@@ -18,8 +20,12 @@ import math
 
 logger = logging.getLogger(__name__)
 
-# Instancia global de MNEME
-_zspace = ZSpace(cache_size=2 << 30)  # 2GB cache
+# Instancia global de MNEME con configuración optimizada
+_config = MnemeConfig()
+_config.enable_async_context = True
+_config.max_concurrent_operations = 8
+_config.enable_encryption = True
+_zspace = ZSpace(_config)
 
 @dataclass
 class CompressionConfig:
@@ -30,9 +36,11 @@ class CompressionConfig:
     memory_limit: Optional[int] = None
     enable_quantization: bool = True
     quantization_bits: int = 8
+    use_parallel_processing: bool = True
+    enable_security: bool = False
 
 class ZParameter(nn.Parameter):
-    """Parámetro respaldado por síntesis MNEME"""
+    """Parámetro respaldado por síntesis MNEME con funcionalidades avanzadas"""
     
     def __new__(cls, data: torch.Tensor = None, 
                 descriptor: ZDescriptor = None,
@@ -40,13 +48,14 @@ class ZParameter(nn.Parameter):
                 config: CompressionConfig = None):
         if descriptor is not None:
             # Cargar desde descriptor
-            data = _zspace.load_desc(descriptor)
+            data = _zspace.load(descriptor.name)
         
         instance = super().__new__(cls, data, requires_grad)
         instance._descriptor = descriptor
         instance._zspace_name = None
         instance._config = config or CompressionConfig()
         instance._last_access = time.time()
+        instance._access_count = 0
         return instance
     
     @classmethod
@@ -56,10 +65,17 @@ class ZParameter(nn.Parameter):
                    requires_grad: bool = True):
         """Crear ZParameter desde tensor con descomposición automática"""
         config = config or CompressionConfig()
-        desc = _zspace.register(name, tensor, 
-                               target_ratio=config.target_ratio,
-                               decomp_type=config.decomp_type,
-                               memory_limit=config.memory_limit)
+        
+        # Usar procesamiento paralelo si está habilitado
+        if config.use_parallel_processing and _zspace.tensor_processor:
+            results = _zspace.tensor_processor.parallel_decomposition([tensor], config.decomp_type or DecompType.TT)
+            if results and results[0].get('type') != 'raw':
+                config.decomp_type = DecompType(results[0]['type'])
+        
+        desc = _zspace.register_parallel(name, tensor, 
+                                       target_ratio=config.target_ratio,
+                                       decomp_type=config.decomp_type,
+                                       memory_limit=config.memory_limit)
         param = cls(descriptor=desc, requires_grad=requires_grad, config=config)
         param._zspace_name = name
         return param
@@ -69,8 +85,9 @@ class ZParameter(nn.Parameter):
         if self._zspace_name:
             self._descriptor = _zspace.update(self._zspace_name, delta_op)
             # Recargar datos
-            self.data = _zspace.load_desc(self._descriptor)
+            self.data = _zspace.load(self._zspace_name)
             self._last_access = time.time()
+            self._access_count += 1
     
     def get_compression_stats(self) -> Dict[str, Any]:
         """Obtener estadísticas de compresión"""
@@ -80,12 +97,34 @@ class ZParameter(nn.Parameter):
                 "decomp_type": self._descriptor.decomp_type.value,
                 "version": self._descriptor.version,
                 "shape": self._descriptor.shape,
-                "size_bytes": len(self._descriptor.seed)
+                "size_bytes": len(self._descriptor.core_data),
+                "access_count": self._access_count,
+                "last_access": self._last_access
             }
         return {}
+    
+    def encrypt_parameter(self, key_id: str = None) -> Tuple[bytes, Dict]:
+        """Cifrar parámetro usando seguridad avanzada"""
+        if _zspace.security_manager:
+            # Usar safetensors para serialización segura
+            buffer = io.BytesIO()
+            from safetensors.torch import save_file
+            save_file({"data": self.data}, buffer)
+            return _zspace.security_manager.encrypt_data(buffer.getvalue(), key_id)
+        return b'', {}
+    
+    def decrypt_parameter(self, encrypted_data: bytes, metadata: Dict) -> torch.Tensor:
+        """Descifrar parámetro"""
+        if _zspace.security_manager:
+            decrypted_data = _zspace.security_manager.decrypt_data(encrypted_data, metadata)
+            buffer = io.BytesIO(decrypted_data)
+            from safetensors.torch import load_file
+            loaded_data = load_file(buffer)
+            return loaded_data["data"].to(self.data.device)
+        return self.data
 
 class ZLinear(nn.Module):
-    """Capa lineal con pesos comprimidos por MNEME"""
+    """Capa lineal con pesos comprimidos por MNEME y funcionalidades avanzadas"""
     
     def __init__(self, in_features: int, out_features: int, 
                  bias: bool = True,
@@ -100,11 +139,17 @@ class ZLinear(nn.Module):
         # Inicializar peso
         weight = torch.randn(out_features, in_features) / math.sqrt(in_features)
         
-        # Registrar con MNEME
+        # Registrar con MNEME usando procesamiento paralelo
         name = f"linear_{id(self)}_weight"
-        self.weight = ZParameter.from_tensor(
-            weight, name, self.config
-        )
+        if self.config.use_parallel_processing:
+            self.weight = ZParameter.from_tensor(weight, name, self.config)
+        else:
+            desc = _zspace.register(name, weight, 
+                                   target_ratio=self.config.target_ratio,
+                                   decomp_type=self.config.decomp_type,
+                                   memory_limit=self.config.memory_limit)
+            self.weight = ZParameter(descriptor=desc, config=self.config)
+            self.weight._zspace_name = name
         
         if bias:
             self.bias = nn.Parameter(torch.zeros(out_features))
@@ -114,19 +159,26 @@ class ZLinear(nn.Module):
         # Estadísticas
         self._forward_count = 0
         self._total_time = 0.0
+        self._memory_usage = 0.0
     
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         """Forward pass con medición de rendimiento"""
         start_time = time.time()
+        start_memory = torch.cuda.memory_allocated() if torch.cuda.is_available() else 0
         
         # Actualizar acceso
         self.weight._last_access = time.time()
+        self.weight._access_count += 1
         
         result = F.linear(input, self.weight, self.bias)
         
         # Actualizar estadísticas
         self._forward_count += 1
         self._total_time += time.time() - start_time
+        
+        if torch.cuda.is_available():
+            end_memory = torch.cuda.memory_allocated()
+            self._memory_usage += (end_memory - start_memory) / (1024 * 1024)  # MB
         
         return result
     
@@ -138,6 +190,7 @@ class ZLinear(nn.Module):
         return {
             "forward_count": self._forward_count,
             "avg_forward_time": avg_time,
+            "memory_usage_mb": self._memory_usage,
             "compression": compression_stats
         }
     
@@ -181,7 +234,14 @@ class ZConv2d(nn.Module):
         
         # Registrar con MNEME
         name = f"conv2d_{id(self)}_weight"
-        self.weight = ZParameter.from_tensor(weight, name, self.config)
+        if self.config.use_parallel_processing:
+            self.weight = ZParameter.from_tensor(weight, name, self.config)
+        else:
+            desc = _zspace.register(name, weight, 
+                                   target_ratio=self.config.target_ratio,
+                                   decomp_type=self.config.decomp_type)
+            self.weight = ZParameter(descriptor=desc, config=self.config)
+            self.weight._zspace_name = name
         
         if bias:
             self.bias = nn.Parameter(torch.zeros(out_channels))
@@ -191,6 +251,7 @@ class ZConv2d(nn.Module):
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         """Forward pass"""
         self.weight._last_access = time.time()
+        self.weight._access_count += 1
         return F.conv2d(input, self.weight, self.bias, 
                        self.stride, self.padding, self.dilation, self.groups)
     
@@ -307,114 +368,6 @@ class ZTransformerBlock(nn.Module):
         x = x + self.dropout(mlp_out)
         
         return x
-
-class ZLSTM(nn.Module):
-    """LSTM con pesos comprimidos por MNEME"""
-    
-    def __init__(self, input_size: int, hidden_size: int,
-                 num_layers: int = 1,
-                 config: CompressionConfig = None,
-                 dropout: float = 0.0):
-        super().__init__()
-        self.input_size = input_size
-        self.hidden_size = hidden_size
-        self.num_layers = num_layers
-        
-        self.config = config or CompressionConfig()
-        
-        # Crear capas LSTM con compresión
-        self.lstm_layers = nn.ModuleList()
-        for i in range(num_layers):
-            layer_input_size = input_size if i == 0 else hidden_size
-            self.lstm_layers.append(
-                ZLSTMCell(layer_input_size, hidden_size, config)
-            )
-        
-        self.dropout = nn.Dropout(dropout) if dropout > 0 else None
-    
-    def forward(self, x: torch.Tensor, 
-                hidden: Optional[Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
-        """Forward pass del LSTM"""
-        batch_size = x.size(0)
-        
-        if hidden is None:
-            h_0 = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=x.device)
-            c_0 = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=x.device)
-            hidden = (h_0, c_0)
-        
-        outputs = []
-        h_n, c_n = hidden
-        
-        for t in range(x.size(1)):
-            h_t = []
-            c_t = []
-            
-            for layer in range(self.num_layers):
-                if layer == 0:
-                    h, c = self.lstm_layers[layer](x[:, t], (h_n[layer], c_n[layer]))
-                else:
-                    h, c = self.lstm_layers[layer](h, (h_n[layer], c_n[layer]))
-                
-                h_t.append(h)
-                c_t.append(c)
-                
-                if self.dropout and layer < self.num_layers - 1:
-                    h = self.dropout(h)
-            
-            h_n = torch.stack(h_t)
-            c_n = torch.stack(c_t)
-            outputs.append(h)
-        
-        output = torch.stack(outputs, dim=1)
-        return output, (h_n, c_n)
-
-class ZLSTMCell(nn.Module):
-    """Celda LSTM individual con compresión MNEME"""
-    
-    def __init__(self, input_size: int, hidden_size: int,
-                 config: CompressionConfig = None):
-        super().__init__()
-        self.input_size = input_size
-        self.hidden_size = hidden_size
-        
-        self.config = config or CompressionConfig()
-        
-        # Pesos de entrada
-        self.weight_ih = ZParameter.from_tensor(
-            torch.randn(4 * hidden_size, input_size),
-            f"lstm_ih_{id(self)}", config
-        )
-        
-        # Pesos de estado oculto
-        self.weight_hh = ZParameter.from_tensor(
-            torch.randn(4 * hidden_size, hidden_size),
-            f"lstm_hh_{id(self)}", config
-        )
-        
-        # Bias
-        self.bias_ih = nn.Parameter(torch.zeros(4 * hidden_size))
-        self.bias_hh = nn.Parameter(torch.zeros(4 * hidden_size))
-    
-    def forward(self, input: torch.Tensor, 
-                hidden: Tuple[torch.Tensor, torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Forward pass de la celda LSTM"""
-        hx, cx = hidden
-        
-        # Calcular puertas
-        gates = F.linear(input, self.weight_ih, self.bias_ih) + \
-                F.linear(hx, self.weight_hh, self.bias_hh)
-        
-        ingate, forgetgate, cellgate, outgate = gates.chunk(4, 1)
-        
-        ingate = torch.sigmoid(ingate)
-        forgetgate = torch.sigmoid(forgetgate)
-        cellgate = torch.tanh(cellgate)
-        outgate = torch.sigmoid(outgate)
-        
-        cy = (forgetgate * cx) + (ingate * cellgate)
-        hy = outgate * torch.tanh(cy)
-        
-        return hy, cy
 
 def compress_model(model: nn.Module, 
                   config: CompressionConfig = None,
@@ -583,6 +536,18 @@ def optimize_model_memory(model: nn.Module,
         return compressed_model
     
     return model
+
+def get_system_metrics() -> Dict[str, Any]:
+    """Obtener métricas del sistema usando el core"""
+    return _zspace.get_performance_metrics()
+
+def get_health_status() -> str:
+    """Obtener estado de salud del sistema"""
+    return _zspace.get_health_status()
+
+def optimize_system() -> Dict[str, Any]:
+    """Optimizar sistema completo"""
+    return _zspace.optimize_system()
 
 # Alias para compatibilidad
 MLinear = ZLinear

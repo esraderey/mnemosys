@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mneme"
 version = "2.0.0"
-description = "Motor de Memoria Neural Mórfica - Sistema avanzado de memoria computacional"
+description = "Motor de Memoria Neural Mórfica v2.0 - Sistema avanzado con Safetensors, Locks Granulares y Cache Adaptativo"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
@@ -17,7 +17,8 @@ maintainers = [
 keywords = [
     "memory", "neural", "compression", "pytorch", "tensor", 
     "machine-learning", "ai", "optimization", "security", 
-    "deduplication", "storage"
+    "deduplication", "storage", "safetensors", "locks", 
+    "lazy-decompression", "adaptive-cache", "granular-locks"
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -45,6 +46,7 @@ dependencies = [
     "cryptography>=3.4.0",
     "psutil>=5.8.0",
     "tqdm>=4.62.0",
+    "safetensors>=0.3.0",
 ]
 
 [project.optional-dependencies]

@@ -1,5 +1,5 @@
 """
-MNEME Usage Examples
+MNEME Usage Examples v2.0
 Ejemplos prácticos del sistema MNEME con todas las funcionalidades avanzadas
 """
 
@@ -10,14 +10,15 @@ import time
 import logging
 from typing import Dict, Any, List
 
-# Importar módulos MNEME
-from mneme_core import ZSpace, DecompType, CompressionLevel
-from mneme_torch import (
+# Importar módulos MNEME actualizados
+from mneme import (
+    ZSpace, DecompType, CompressionLevel, SecurityLevel,
     ZLinear, ZConv2d, ZAttention, ZTransformerBlock, 
     compress_model, get_compression_stats, get_model_performance_stats,
-    CompressionConfig, optimize_model_memory
+    CompressionConfig, optimize_model_memory, get_system_metrics,
+    get_health_status, optimize_system, MNEMEOptimizer, OptimizationLevel,
+    SecurityManager, encrypt_data, decrypt_data
 )
-from mneme_security import SecurityManager, SecurityLevel, AuditEvent
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -26,16 +27,11 @@ logger = logging.getLogger(__name__)
 def example_basic_usage():
     """Uso básico de MNEME con todas las funcionalidades"""
     print("="*60)
-    print("EJEMPLO BÁSICO DE MNEME")
+    print("EJEMPLO BÁSICO DE MNEME v2.0")
     print("="*60)
     
     # Inicializar MNEME con configuración avanzada
-    mneme = ZSpace(
-        cache_size=1 << 30,  # 1GB
-        compression_level=CompressionLevel.HIGH,
-        enable_merkle=True,
-        enable_checksums=True
-    )
+    mneme = ZSpace()
     
     # Crear tensor de ejemplo
     tensor = torch.randn(1024, 1024)
@@ -66,56 +62,132 @@ def example_basic_usage():
     print(f"- Cache hits: {stats['performance']['cache']['hits']}")
     print(f"- Cache misses: {stats['performance']['cache']['misses']}")
 
-def example_advanced_compression():
-    """Ejemplo de compresión avanzada con diferentes algoritmos"""
+def example_parallel_processing():
+    """Ejemplo de procesamiento en paralelo"""
     print("\n" + "="*60)
-    print("COMPRESIÓN AVANZADA")
+    print("PROCESAMIENTO EN PARALELO")
     print("="*60)
     
-    mneme = ZSpace(cache_size=512 << 20)  # 512MB
+    mneme = ZSpace()
     
-    # Crear diferentes tipos de tensores
+    # Crear múltiples tensores para procesamiento paralelo
+    tensors = [torch.randn(500, 500) for _ in range(8)]
+    print(f"Procesando {len(tensors)} tensores en paralelo...")
+    
+    # Registrar con procesamiento paralelo
+    start_time = time.time()
+    descriptors = []
+    for i, tensor in enumerate(tensors):
+        desc = mneme.register_parallel(f"parallel_tensor_{i}", tensor, 
+                                       target_ratio=0.1, decomp_type=DecompType.TT)
+        descriptors.append(desc)
+    parallel_time = time.time() - start_time
+    
+    # Cargar con optimizaciones paralelas
+    start_time = time.time()
+    loaded_tensors = []
+    for i in range(len(tensors)):
+        loaded = mneme.load_parallel(f"parallel_tensor_{i}")
+        loaded_tensors.append(loaded)
+    load_time = time.time() - start_time
+    
+    # Verificar precisión
+    total_error = 0
+    for i, (original, loaded) in enumerate(zip(tensors, loaded_tensors)):
+        error = torch.norm(original - loaded) / torch.norm(original)
+        total_error += error
+    
+    avg_error = total_error / len(tensors)
+    avg_ratio = sum(desc.meta.get('compression_ratio', 1.0) for desc in descriptors) / len(descriptors)
+    
+    print(f"Resultados del procesamiento paralelo:")
+    print(f"- Tiempo de registro: {parallel_time:.3f}s")
+    print(f"- Tiempo de carga: {load_time:.3f}s")
+    print(f"- Ratio promedio: {avg_ratio:.3f}")
+    print(f"- Error promedio: {avg_error:.6f}")
+    
+    # Métricas de paralelización
+    parallel_metrics = mneme.get_parallel_metrics()
+    print(f"- Operaciones paralelas: {parallel_metrics['thread_operations'] + parallel_metrics['process_operations']}")
+    print(f"- Eficiencia: {parallel_metrics['parallel_efficiency']:.2%}")
+
+def example_advanced_security():
+    """Ejemplo de seguridad avanzada"""
+    print("\n" + "="*60)
+    print("SEGURIDAD AVANZADA")
+    print("="*60)
+    
+    # Crear tensor sensible
+    sensitive_tensor = torch.randn(100, 100)
+    print(f"Tensor sensible: {sensitive_tensor.shape}")
+    
+    # Cifrar tensor
+    encrypted_data, metadata = mneme.encrypt_tensor(sensitive_tensor)
+    print(f"Datos cifrados: {len(encrypted_data)} bytes")
+    print(f"Metadata: {list(metadata.keys())}")
+    
+    # Descifrar tensor
+    decrypted_tensor = mneme.decrypt_tensor(encrypted_data, metadata)
+    print(f"Tensor descifrado: {decrypted_tensor.shape}")
+    
+    # Verificar integridad
+    integrity_ok = torch.allclose(sensitive_tensor, decrypted_tensor, atol=1e-6)
+    print(f"Integridad verificada: {'✓' if integrity_ok else '✗'}")
+    
+    # Autenticación de usuario
+    credentials = {"username": "test_user", "password": "test_pass"}
+    session_id = mneme.authenticate_user(credentials)
+    print(f"Sesión autenticada: {session_id[:8]}...")
+    
+    # Métricas de seguridad
+    security_metrics = mneme.get_security_metrics()
+    print(f"Métricas de seguridad:")
+    print(f"- Operaciones de cifrado: {security_metrics['encryption_operations']}")
+    print(f"- Intentos de autenticación: {security_metrics['authentication_attempts']}")
+    print(f"- Rotaciones de clave: {security_metrics['key_rotations']}")
+
+def example_advanced_storage():
+    """Ejemplo de almacenamiento avanzado"""
+    print("\n" + "="*60)
+    print("ALMACENAMIENTO AVANZADO")
+    print("="*60)
+    
+    # Crear tensores de diferentes tamaños
+    small_tensor = torch.randn(100, 100)  # Memoria
+    medium_tensor = torch.randn(1000, 1000)  # SSD
+    large_tensor = torch.randn(5000, 5000)  # HDD
+    
     tensors = {
-        "sparse": torch.zeros(1000, 1000),
-        "dense": torch.randn(500, 500),
-        "low_rank": torch.randn(200, 200) @ torch.randn(200, 200).T,
-        "high_dim": torch.randn(50, 50, 50, 50)
+        "small": small_tensor,
+        "medium": medium_tensor,
+        "large": large_tensor
     }
-    
-    # Hacer sparse el tensor sparse
-    tensors["sparse"][::10, ::10] = torch.randn(100, 100)
     
     for name, tensor in tensors.items():
         print(f"\nProcesando tensor {name}: {tensor.shape}")
         
-        # Auto-selección de descomposición
-        desc = mneme.register(f"{name}_auto", tensor, target_ratio=0.1)
-        loaded = mneme.load(f"{name}_auto")
+        # Registrar con almacenamiento automático
+        desc = mneme.register(name, tensor, target_ratio=0.1)
         
-        error = torch.norm(tensor - loaded) / torch.norm(tensor)
-        ratio = desc.meta.get('compression_ratio', 1.0)
+        # Simular accesos para migración de niveles
+        for _ in range(5):
+            loaded = mneme.load(name)
         
-        print(f"  Auto-selección: {desc.decomp_type.value}, "
-              f"Ratio={ratio:.3f}, Error={error:.6f}")
-        
-        # Probar diferentes tipos de descomposición
-        for decomp_type in [DecompType.TT, DecompType.CP, DecompType.TUCKER]:
-            try:
-                desc = mneme.register(f"{name}_{decomp_type.value}", tensor, 
-                                    decomp_type=decomp_type, target_ratio=0.1)
-                loaded = mneme.load(f"{name}_{decomp_type.value}")
-                
-                error = torch.norm(tensor - loaded) / torch.norm(tensor)
-                ratio = desc.meta.get('compression_ratio', 1.0)
-                
-                print(f"  {decomp_type.value}: Ratio={ratio:.3f}, Error={error:.6f}")
-            except Exception as e:
-                print(f"  {decomp_type.value}: Error - {e}")
+        print(f"  Ratio de compresión: {desc.meta.get('compression_ratio', 1.0):.3f}")
+        print(f"  Tamaño comprimido: {len(desc.core_data)/1024:.1f}KB")
+    
+    # Métricas de almacenamiento
+    storage_metrics = mneme.get_storage_metrics()
+    print(f"\nMétricas de almacenamiento:")
+    print(f"- Operaciones de lectura: {storage_metrics.get('read_operations', 0)}")
+    print(f"- Operaciones de escritura: {storage_metrics.get('write_operations', 0)}")
+    print(f"- Cache hits: {storage_metrics.get('cache_hits', 0)}")
+    print(f"- Cache misses: {storage_metrics.get('cache_misses', 0)}")
 
 def example_model_compression():
-    """Compresión de modelos con MNEME"""
+    """Compresión de modelos con MNEME v2.0"""
     print("\n" + "="*60)
-    print("COMPRESIÓN DE MODELOS")
+    print("COMPRESIÓN DE MODELOS v2.0")
     print("="*60)
     
     # Crear modelo complejo
@@ -147,11 +219,13 @@ def example_model_compression():
     model = ComplexModel()
     print(f"Modelo original: {sum(p.numel() for p in model.parameters()):,} parámetros")
     
-    # Configuración de compresión
+    # Configuración de compresión avanzada
     config = CompressionConfig(
         target_ratio=0.1,
         compression_level=CompressionLevel.HIGH,
-        memory_limit=50 * 1024 * 1024  # 50MB
+        memory_limit=50 * 1024 * 1024,  # 50MB
+        use_parallel_processing=True,
+        enable_security=True
     )
     
     # Comprimir modelo
@@ -183,27 +257,41 @@ def example_model_compression():
     print(f"- Tiempo original: {original_time:.4f}s")
     print(f"- Tiempo comprimido: {compressed_time:.4f}s")
     print(f"- Diferencia de salida: {diff:.6f}")
+    
+    # Estadísticas de rendimiento del modelo
+    perf_stats = get_model_performance_stats(compressed_model)
+    print(f"\nEstadísticas de rendimiento:")
+    print(f"- Tiempo total de forward: {perf_stats['total_forward_time']:.4f}s")
+    print(f"- Conteo total de forward: {perf_stats['total_forward_count']}")
+    print(f"- Tiempo promedio: {perf_stats['avg_forward_time']:.4f}s")
 
 def example_transformer_compression():
-    """Compresión de modelo Transformer"""
+    """Compresión de modelo Transformer con MNEME v2.0"""
     print("\n" + "="*60)
-    print("COMPRESIÓN DE TRANSFORMER")
+    print("COMPRESIÓN DE TRANSFORMER v2.0")
     print("="*60)
     
-    # Crear Transformer simple
+    # Crear Transformer simple con capas MNEME
     class SimpleTransformer(nn.Module):
         def __init__(self, vocab_size=1000, embed_dim=512, num_heads=8, num_layers=6):
             super().__init__()
             self.embedding = nn.Embedding(vocab_size, embed_dim)
             self.pos_encoding = nn.Parameter(torch.randn(1000, embed_dim))
             
+            # Configuración de compresión para capas
+            config = CompressionConfig(
+                target_ratio=0.1,
+                use_parallel_processing=True,
+                enable_security=True
+            )
+            
             self.layers = nn.ModuleList([
-                ZTransformerBlock(embed_dim, num_heads, config=CompressionConfig(target_ratio=0.1))
+                ZTransformerBlock(embed_dim, num_heads, config=config)
                 for _ in range(num_layers)
             ])
             
             self.norm = nn.LayerNorm(embed_dim)
-            self.output = nn.Linear(embed_dim, vocab_size)
+            self.output = ZLinear(embed_dim, vocab_size, config=config)
         
         def forward(self, x):
             x = self.embedding(x) + self.pos_encoding[:x.size(1)]
@@ -233,49 +321,74 @@ def example_transformer_compression():
     print(f"Inferencia: {inference_time:.4f}s")
     print(f"Salida: {output.shape}")
 
-def example_security_features():
-    """Ejemplo de funcionalidades de seguridad"""
+def example_optimization_system():
+    """Ejemplo de sistema de optimización"""
     print("\n" + "="*60)
-    print("FUNCIONALIDADES DE SEGURIDAD")
+    print("SISTEMA DE OPTIMIZACIÓN")
     print("="*60)
     
-    # Inicializar gestor de seguridad
-    security_manager = SecurityManager(
-        security_level=SecurityLevel.HIGH,
-        audit_log_file="mneme_audit.log"
+    # Crear optimizador
+    optimizer = MNEMEOptimizer(
+        optimization_level=OptimizationLevel.AGGRESSIVE,
+        enable_profiling=True,
+        enable_parallel_processing=True
     )
     
-    # Crear descriptor seguro
-    data = torch.randn(100, 100).numpy().tobytes()
-    secure_desc = security_manager.create_secure_descriptor(data, "test_resource")
+    # Crear tensores para optimización
+    tensors = [torch.randn(1000, 1000) for _ in range(5)]
+    print(f"Optimizando {len(tensors)} tensores...")
     
-    print(f"Descriptor seguro creado:")
-    print(f"- Tamaño de datos: {len(data)} bytes")
-    print(f"- Checksum: {secure_desc.checksum.hex()[:16]}...")
-    print(f"- Firma: {secure_desc.signature.hex()[:16]}...")
-    print(f"- Merkle root: {secure_desc.merkle_root.hex()[:16] if secure_desc.merkle_root else 'N/A'}...")
+    # Optimizar tensores
+    start_time = time.time()
+    optimized_tensors = optimizer.optimize_tensor_operations(tensors)
+    optimization_time = time.time() - start_time
     
-    # Verificar integridad
-    integrity_ok = secure_desc.verify_integrity()
-    signature_ok = secure_desc.verify_signature()
+    print(f"Tiempo de optimización: {optimization_time:.3f}s")
     
-    print(f"\nVerificaciones:")
-    print(f"- Integridad: {'✓' if integrity_ok else '✗'}")
-    print(f"- Firma: {'✓' if signature_ok else '✗'}")
+    # Reporte de optimización
+    report = optimizer.get_optimization_report()
+    print(f"\nReporte de optimización:")
+    print(f"- Nivel: {report['optimization_level']}")
+    print(f"- Métricas de rendimiento: {len(report['performance_metrics'])} categorías")
+    print(f"- Optimizaciones de recursos: {len(report['resource_optimization'])} estrategias")
+    print(f"- Recomendaciones: {len(report['recommendations'])}")
     
-    # Obtener prueba de Merkle
-    if secure_desc.merkle_root:
-        proof = secure_desc.get_merkle_proof(0)
-        proof_ok = secure_desc.verify_merkle_proof(proof, 0)
-        print(f"- Prueba Merkle: {'✓' if proof_ok else '✗'}")
+    # Estado de salud del sistema
+    health = optimizer.get_health_status()
+    print(f"Estado de salud: {health}")
     
-    # Estado de seguridad
-    security_status = security_manager.get_security_status()
-    print(f"\nEstado de seguridad:")
-    print(f"- Nivel: {security_status['security_level']}")
-    print(f"- Recursos bloqueados: {len(security_status['locked_resources'])}")
-    print(f"- Intentos fallidos: {security_status['failed_attempts']}")
-    print(f"- Sesiones activas: {security_status['active_sessions']}")
+    # Optimizar sistema completo
+    system_optimization = optimizer.optimize_system()
+    print(f"\nOptimizaciones del sistema:")
+    for strategy, result in system_optimization.items():
+        if 'optimizations' in result:
+            print(f"- {strategy}: {len(result['optimizations'])} optimizaciones")
+
+def example_performance_monitoring():
+    """Ejemplo de monitoreo de rendimiento"""
+    print("\n" + "="*60)
+    print("MONITOREO DE RENDIMIENTO")
+    print("="*60)
+    
+    # Obtener métricas del sistema
+    metrics = get_system_metrics()
+    print(f"Métricas del sistema:")
+    print(f"- Operaciones totales: {metrics['metrics']['operations']['total']}")
+    print(f"- Operaciones exitosas: {metrics['metrics']['operations']['successful']}")
+    print(f"- Operaciones fallidas: {metrics['metrics']['operations']['failed']}")
+    print(f"- Uso de memoria: {metrics['metrics']['memory']['current_usage']/1024/1024:.1f}MB")
+    print(f"- Presión de memoria: {metrics['metrics']['memory']['memory_pressure']:.1%}")
+    
+    # Estado de salud
+    health = get_health_status()
+    print(f"Estado de salud: {health}")
+    
+    # Optimizar sistema
+    optimization_result = optimize_system()
+    print(f"\nResultado de optimización:")
+    for strategy, result in optimization_result.items():
+        if isinstance(result, dict) and 'optimizations' in result:
+            print(f"- {strategy}: {len(result['optimizations'])} optimizaciones aplicadas")
 
 def example_memory_optimization():
     """Ejemplo de optimización de memoria"""
@@ -362,7 +475,7 @@ def example_performance_benchmark():
     print("BENCHMARK DE RENDIMIENTO")
     print("="*60)
     
-    mneme = ZSpace(cache_size=1 << 30)
+    mneme = ZSpace()
     
     # Diferentes tamaños de tensor
     sizes = [(100, 100), (500, 500), (1000, 1000), (2000, 2000)]
@@ -389,7 +502,7 @@ def example_performance_benchmark():
         ratio = desc.meta.get('compression_ratio', 1.0)
         
         print(f"  Tamaño original: {original_size:.1f}KB")
-        print(f"  Tamaño comprimido: {len(desc.seed)/1024:.1f}KB")
+        print(f"  Tamaño comprimido: {len(desc.core_data)/1024:.1f}KB")
         print(f"  Ratio: {ratio:.3f}")
         print(f"  Error: {error:.6f}")
         print(f"  Tiempo almacenamiento: {store_time*1000:.2f}ms")
@@ -397,15 +510,18 @@ def example_performance_benchmark():
 
 def main():
     """Función principal con todos los ejemplos"""
-    print("🧠 MNEME - Motor de Memoria Neural Mórfica")
-    print("Ejemplos de uso avanzado\n")
+    print("🧠 MNEME v2.0 - Motor de Memoria Neural Mórfica")
+    print("Ejemplos de uso avanzado con nuevas funcionalidades\n")
     
     try:
         example_basic_usage()
-        example_advanced_compression()
+        example_parallel_processing()
+        example_advanced_security()
+        example_advanced_storage()
         example_model_compression()
         example_transformer_compression()
-        example_security_features()
+        example_optimization_system()
+        example_performance_monitoring()
         example_memory_optimization()
         example_incremental_updates()
         example_performance_benchmark()

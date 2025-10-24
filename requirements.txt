@@ -27,6 +27,7 @@ pycryptodome>=3.10.0
 
 # Advanced serialization
 msgpack>=1.0.0
+safetensors>=0.3.0
 
 # Performance optimization
 numba>=0.50.0

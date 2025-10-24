@@ -1,4 +1,4 @@
-# Actualización de Sistema de Almacenamiento Avanzado - MNEME
+# Actualización de Sistema de Almacenamiento Avanzado - MNEME v2.0
 
 ## Resumen de Cambios
 

@@ -1,4 +1,4 @@
-# Sistema de Deduplicación de Contexto MNEME
+# Sistema de Deduplicación de Contexto MNEME v2.0
 
 ## Resumen
 

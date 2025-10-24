@@ -1,5 +1,5 @@
-# MNEME Makefile
-# Motor de Memoria Neural Mórfica
+# MNEME v2.0 Makefile
+# Motor de Memoria Neural Mórfica (Safetensors + Locks Granulares)
 
 .PHONY: help install install-dev test lint format clean build publish docs
 
@@ -70,6 +70,7 @@ setup-pre-commit: ## Setup pre-commit hooks
 
 run-examples: ## Run example scripts
 	python examples/example_mneme.py
+	python examples/example_advanced_features.py
 	python examples/example_advanced_serialization.py
 	python examples/example_advanced_encryption.py
 	python examples/example_context_deduplication.py

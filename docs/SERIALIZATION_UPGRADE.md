@@ -1,12 +1,13 @@
-# Actualización de Serialización Avanzada - MNEME
+# Actualización de Serialización Avanzada - MNEME v2.0
 
 ## Resumen de Cambios
 
-Se ha implementado un sistema de serialización avanzado y seguro que reemplaza completamente el uso de pickle por métodos más seguros y eficientes.
+Se ha implementado un sistema de serialización avanzado y seguro que reemplaza completamente el uso de pickle por safetensors, proporcionando mayor seguridad y eficiencia.
 
 ## Nuevas Características
 
 ### 1. Múltiples Formatos de Serialización
+- **Safetensors**: Serialización segura sin pickle (recomendado)
 - **Torch**: Usando `torch.save/load` (más seguro que pickle)
 - **MessagePack**: Serialización binaria rápida
 - **JSON**: Para datos simples y portabilidad
@@ -18,11 +19,13 @@ Se ha implementado un sistema de serialización avanzado y seguro que reemplaza 
 - **HMAC**: Firma criptográfica con HMAC-SHA256
 - **ENCRYPTED**: Cifrado simétrico con Fernet
 - **SIGNED**: Firma digital para verificación de integridad
+- **SAFETENSORS**: Serialización segura sin vulnerabilidades de pickle
 
 ### 3. Compresión Avanzada
 - Soporte para LZ4 con niveles configurables
 - Compresión automática opcional
 - Descompresión transparente
+- Lazy decompression para optimizar memoria
 
 ### 4. Validación de Integridad
 - Verificación de tipos de datos

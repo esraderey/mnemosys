@@ -1,0 +1,32 @@
+# MNEME v2.0 Issue Template Configuration
+# This file configures the issue templates and their behavior
+
+blank_issues_enabled: false
+contact_links:
+  - name: 🧠 MNEME Community
+    url: https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/discussions
+    about: Ask questions and discuss MNEME v2.0 with the community
+  - name: 📚 Documentation
+    url: https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/blob/main/README.md
+    about: Read the documentation to learn about MNEME v2.0
+  - name: 🔒 Security Issues
+    url: mailto:security@mneme.dev
+    about: Report security vulnerabilities privately
+  - type: 💬 GitHub Discussions
+    url: https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/discussions
+    about: Ask questions and discuss ideas
+  - type: 📖 Wiki
+    url: https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/wiki
+    about: Read the wiki for additional information
+  - type: 🐛 Bug Reports
+    url: https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues/new?template=bug_report.md
+    about: Report a bug in MNEME v2.0
+  - type: ✨ Feature Requests
+    url: https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues/new?template=feature_request.md
+    about: Suggest a new feature for MNEME v2.0
+  - type: 🔒 Security Reports
+    url: https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues/new?template=security_report.md
+    about: Report a security vulnerability
+  - type: 📧 Email Support
+    url: mailto:msc.framework@gmail.com
+    about: Contact the development team directly

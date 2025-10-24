@@ -1,382 +1,355 @@
-# Contributing to MNEME
+# Contributing to MNEME v2.0
 
-Thank you for your interest in contributing to MNEME! This document provides guidelines and information for contributors.
+¡Gracias por tu interés en contribuir a MNEME! Este documento te guiará a través del proceso de contribución para el Motor de Memoria Neural Mórfica v2.0.
 
-## 🚀 Getting Started
+## 🚀 Nuevas Funcionalidades v2.0
 
-### Prerequisites
+MNEME v2.0 incluye funcionalidades avanzadas que requieren consideraciones especiales:
 
-- Python 3.8+
-- Git
-- Basic understanding of PyTorch and neural networks
+- **Procesamiento Paralelo**: Threads, procesos y asyncio
+- **Seguridad Cuántica**: Algoritmos post-cuánticos y gestión de claves
+- **Almacenamiento Inteligente**: Migración automática entre niveles
+- **Monitoreo en Tiempo Real**: Métricas y alertas automáticas
+- **Optimización Automática**: Gestión inteligente de recursos
 
-### Development Setup
+## 📋 Cómo Contribuir
 
-1. **Fork the repository**
-   ```bash
-   git clone https://github.com/your-username/MNEME---Motor-de-Memoria-Neural-M-rfica.git
-   cd MNEME---Motor-de-Memoria-Neural-M-rfica
-   ```
-
-2. **Install development dependencies**
-   ```bash
-   make dev-setup
-   # or manually:
-   pip install -e .[dev,all]
-   pre-commit install
-   ```
-
-3. **Run tests to ensure everything works**
-   ```bash
-   make test
-   ```
-
-## 📝 Contribution Guidelines
-
-### Code Style
-
-- Follow PEP 8 style guidelines
-- Use type hints for all functions
-- Write docstrings for all public functions
-- Keep functions small and focused
-- Use meaningful variable names
-
-### Commit Messages
-
-Use conventional commit format:
-
-```
-type(scope): description
-
-[optional body]
-
-[optional footer]
-```
-
-Types:
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes
-- `refactor`: Code refactoring
-- `test`: Test additions/changes
-- `chore`: Maintenance tasks
-
-Examples:
-```
-feat(core): add context deduplication system
-fix(security): resolve HMAC verification issue
-docs(api): update serialization documentation
-```
-
-### Pull Request Process
-
-1. **Create a feature branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. **Make your changes**
-   - Write code following our style guidelines
-   - Add tests for new functionality
-   - Update documentation if needed
-
-3. **Run checks**
-   ```bash
-   make check-all
-   ```
-
-4. **Commit your changes**
-   ```bash
-   git add .
-   git commit -m "feat(scope): your commit message"
-   ```
-
-5. **Push and create PR**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-## 🧪 Testing
-
-### Running Tests
+### 1. Configuración del Entorno
 
 ```bash
-# Run all tests
-make test
+# Clonar el repositorio
+git clone https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica.git
+cd MNEME---Motor-de-Memoria-Neural-M-rfica
 
-# Run specific test categories
-make test-gpu      # GPU tests
-make test-security # Security tests
+# Instalar dependencias
+pip install -r requirements.txt
+pip install -e .[dev]
 
-# Run with coverage
-pytest tests/ -v --cov=src/mneme --cov-report=html
+# Configurar pre-commit hooks
+pre-commit install
 ```
 
-### Writing Tests
+### 2. Configuración de Desarrollo
 
-- Place tests in the `tests/` directory
-- Use descriptive test names
-- Test both success and failure cases
-- Include edge cases and error conditions
-- Use fixtures for common test data
+Copia el archivo de configuración de ejemplo:
 
-Example test structure:
-```python
-import pytest
-import torch
-from mneme import ZSpace, MnemeConfig
-
-class TestZSpace:
-    def test_basic_operations(self):
-        """Test basic ZSpace operations."""
-        config = MnemeConfig()
-        with ZSpace(config) as zspace:
-            tensor = torch.randn(10, 10)
-            desc = zspace.register("test", tensor)
-            loaded = zspace.load("test")
-            assert torch.allclose(tensor, loaded)
-    
-    def test_error_handling(self):
-        """Test error handling."""
-        config = MnemeConfig()
-        with ZSpace(config) as zspace:
-            with pytest.raises(ValueError):
-                zspace.load("nonexistent")
+```bash
+cp config.example.env .env
 ```
 
-## 📚 Documentation
+Edita `.env` con tus configuraciones:
 
-### Code Documentation
+```env
+# Configuración para desarrollo
+MNEME_DEBUG=true
+MNEME_ENABLE_METRICS=true
+MNEME_ENABLE_PARALLEL_PROCESSING=true
+MNEME_MAX_WORKERS=4
+MNEME_SECURITY_LEVEL=STANDARD
+```
 
-- Use Google-style docstrings
-- Include type hints
-- Document all public APIs
-- Provide usage examples
+### 3. Estructura del Proyecto
 
-Example:
+```
+src/mneme/
+├── __init__.py              # Exports principales v2.0
+├── mneme_core.py            # Núcleo con funcionalidades avanzadas
+├── mneme_torch.py           # Integración PyTorch mejorada
+├── mneme_security.py        # Sistema de seguridad avanzado
+└── mneme_optimization.py    # Optimizaciones y monitoreo
+
+examples/
+├── example_mneme.py         # Ejemplo completo v2.0
+├── example_advanced_*.py   # Ejemplos específicos
+└── ...
+
+tests/
+├── test_mneme.py            # Tests unitarios v2.0
+└── ...
+
+docs/
+├── README.md
+├── SERIALIZATION_UPGRADE.md
+├── ENCRYPTION_AND_CONTEXT_UPGRADE.md
+├── ADVANCED_STORAGE_UPGRADE.md
+└── CONTEXT_DEDUPLICATION_UPGRADE.md
+```
+
+## 🧪 Desarrollo y Testing
+
+### Ejecutar Tests
+
+```bash
+# Tests unitarios
+python -m pytest tests/ -v
+
+# Tests con coverage
+python -m pytest tests/ --cov=src/mneme --cov-report=html
+
+# Tests de rendimiento
+python tests/test_mneme.py
+```
+
+### Ejecutar Ejemplos
+
+```bash
+# Ejemplo básico
+python examples/example_mneme.py
+
+# Ejemplo de seguridad
+python examples/example_advanced_encryption.py
+
+# Ejemplo de almacenamiento
+python examples/example_advanced_storage.py
+```
+
+### Verificar Calidad de Código
+
+```bash
+# Linting
+flake8 src/ tests/ examples/
+
+# Type checking
+mypy src/
+
+# Security check
+bandit -r src/
+
+# Format code
+black src/ tests/ examples/
+```
+
+## 🔧 Áreas de Contribución
+
+### 1. **Procesamiento Paralelo**
+- Mejorar algoritmos de descomposición paralela
+- Optimizar distribución de carga
+- Implementar nuevos modos de ejecución
+
+### 2. **Seguridad Cuántica**
+- Implementar nuevos algoritmos post-cuánticos
+- Mejorar gestión de claves cuánticas
+- Optimizar rotación automática de claves
+
+### 3. **Almacenamiento Inteligente**
+- Mejorar algoritmos de migración automática
+- Implementar nuevos backends de almacenamiento
+- Optimizar compresión adaptativa
+
+### 4. **Monitoreo y Optimización**
+- Agregar nuevas métricas de rendimiento
+- Implementar alertas inteligentes
+- Mejorar algoritmos de optimización automática
+
+### 5. **Integración PyTorch**
+- Crear nuevas capas MNEME
+- Optimizar compresión de modelos
+- Mejorar estadísticas de rendimiento
+
+## 📝 Guías de Estilo
+
+### Código Python
+
 ```python
-def process_context_for_deduplication(
-    self, 
-    context_id: str, 
-    tensor: torch.Tensor, 
-    metadata: Dict[str, Any] = None
-) -> Dict[str, Any]:
+# Usar type hints
+def process_tensor(tensor: torch.Tensor, 
+                   config: CompressionConfig) -> ZDescriptor:
+    """Procesar tensor con configuración específica."""
+    pass
+
+# Documentar funciones públicas
+def register_parallel(self, name: str, tensor: torch.Tensor, 
+                    **kwargs) -> ZDescriptor:
     """
-    Process context for deduplication.
+    Registrar tensor con procesamiento paralelo.
     
     Args:
-        context_id: Unique identifier for the context
-        tensor: Input tensor to process
-        metadata: Optional metadata dictionary
+        name: Nombre del tensor
+        tensor: Tensor a registrar
+        **kwargs: Configuraciones adicionales
         
     Returns:
-        Dictionary containing deduplication results
+        Descriptor del tensor registrado
         
-    Example:
-        >>> result = zspace.process_context_for_deduplication(
-        ...     "my_context", tensor, {"type": "feature_map"}
-        ... )
-        >>> print(result["deduplicated"])
+    Raises:
+        MnemeError: Si el registro falla
     """
+    pass
 ```
 
-### Documentation Updates
+### Documentación
 
-- Update README.md for major changes
-- Add examples for new features
-- Update API documentation
-- Include performance benchmarks
+- Usar docstrings en formato Google
+- Incluir ejemplos de uso
+- Documentar parámetros y excepciones
+- Mantener documentación actualizada
 
-## 🔒 Security
-
-### Security Guidelines
-
-- Never commit secrets or API keys
-- Use secure coding practices
-- Validate all inputs
-- Handle errors gracefully
-- Follow the principle of least privilege
-
-### Security Testing
+### Commits
 
 ```bash
-# Run security checks
-make security
-
-# Check for vulnerabilities
-safety check
-
-# Run bandit security linter
-bandit -r src/ -f json -o bandit-report.json
+# Formato de commits
+feat: agregar procesamiento paralelo híbrido
+fix: corregir migración automática de almacenamiento
+docs: actualizar documentación de seguridad cuántica
+test: agregar tests para monitoreo de rendimiento
+perf: optimizar descomposición de tensores
 ```
 
-## 🚀 Performance
+## 🐛 Reportar Bugs
 
-### Performance Guidelines
+### Información Requerida
 
-- Profile code before optimizing
-- Use appropriate data structures
-- Minimize memory allocations
-- Leverage vectorization when possible
-- Consider GPU acceleration
+1. **Versión de MNEME**: `python -c "import mneme; print(mneme.__version__)"`
+2. **Sistema operativo**: Windows/macOS/Linux
+3. **Versión de Python**: `python --version`
+4. **Versión de PyTorch**: `python -c "import torch; print(torch.__version__)"`
+5. **Configuración**: Archivo `.env` (sin claves sensibles)
+6. **Logs**: Archivos de log relevantes
+7. **Reproducción**: Pasos para reproducir el bug
 
-### Benchmarking
-
-```bash
-# Run performance benchmarks
-make benchmark
-
-# Profile specific functions
-python -m cProfile examples/example_mneme.py
-```
-
-## 🐛 Bug Reports
-
-### Reporting Bugs
-
-When reporting bugs, please include:
-
-1. **Environment information**
-   - Python version
-   - Operating system
-   - MNEME version
-   - Dependencies versions
-
-2. **Reproduction steps**
-   - Minimal code example
-   - Expected behavior
-   - Actual behavior
-   - Error messages
-
-3. **Additional context**
-   - Screenshots if applicable
-   - Related issues
-   - Workarounds if any
-
-### Bug Report Template
+### Template de Bug Report
 
 ```markdown
-**Bug Description**
-Brief description of the bug.
+## Descripción del Bug
+[Descripción clara del problema]
 
-**Environment**
-- Python: 3.11.0
-- OS: Windows 10
-- MNEME: 2.0.0
-- PyTorch: 2.0.0
+## Pasos para Reproducir
+1. [Paso 1]
+2. [Paso 2]
+3. [Paso 3]
 
-**Reproduction Steps**
-1. Run the following code:
-```python
-# Your code here
+## Comportamiento Esperado
+[Lo que debería pasar]
+
+## Comportamiento Actual
+[Lo que está pasando]
+
+## Información del Sistema
+- OS: [Windows/macOS/Linux]
+- Python: [versión]
+- PyTorch: [versión]
+- MNEME: [versión]
+
+## Logs
 ```
-2. Observe the error
-
-**Expected Behavior**
-What should happen.
-
-**Actual Behavior**
-What actually happens.
-
-**Error Message**
-```
-Traceback (most recent call last):
-  File "...", line ..., in ...
-    ...
-Error: ...
-```
+[Logs relevantes]
 ```
 
-## 💡 Feature Requests
+## Configuración
+```env
+[Configuración relevante sin claves sensibles]
+```
+```
 
-### Suggesting Features
+## 💡 Proponer Funcionalidades
 
-When suggesting features, please include:
-
-1. **Use case description**
-   - What problem does it solve?
-   - Who would benefit from it?
-   - How would it be used?
-
-2. **Proposed solution**
-   - High-level design
-   - API considerations
-   - Implementation approach
-
-3. **Alternatives considered**
-   - Other solutions you've considered
-   - Why this approach is better
-
-### Feature Request Template
+### Template de Feature Request
 
 ```markdown
-**Feature Description**
-Brief description of the feature.
+## Descripción de la Funcionalidad
+[Descripción clara de la funcionalidad propuesta]
 
-**Use Case**
-Describe the use case and problem it solves.
+## Caso de Uso
+[Por qué sería útil esta funcionalidad]
 
-**Proposed Solution**
-Describe your proposed solution.
+## Implementación Propuesta
+[Ideas sobre cómo implementar]
 
-**Alternatives**
-Describe alternatives you've considered.
+## Alternativas Consideradas
+[Otras opciones que has considerado]
 
-**Additional Context**
-Any other relevant information.
+## Impacto
+[Impacto en rendimiento, seguridad, etc.]
 ```
 
-## 🏷️ Release Process
+## 🔒 Seguridad
 
-### Versioning
+### Reportar Vulnerabilidades
 
-We follow [Semantic Versioning](https://semver.org/):
-- **MAJOR**: Breaking changes
-- **MINOR**: New features (backward compatible)
-- **PATCH**: Bug fixes (backward compatible)
+Para reportar vulnerabilidades de seguridad:
 
-### Release Checklist
+1. **NO** crear issues públicos
+2. Enviar email a: `security@mneme.dev`
+3. Incluir descripción detallada
+4. Esperar respuesta antes de divulgar
 
-- [ ] All tests pass
-- [ ] Documentation updated
-- [ ] Changelog updated
-- [ ] Version bumped
-- [ ] Security review completed
-- [ ] Performance benchmarks updated
+### Consideraciones de Seguridad
 
-## 📞 Getting Help
+- Nunca commitear claves o tokens
+- Usar variables de entorno para configuración sensible
+- Validar todas las entradas de usuario
+- Implementar rate limiting en APIs
+- Usar algoritmos criptográficos seguros
 
-### Communication Channels
+## 📚 Recursos de Desarrollo
 
-- **GitHub Issues**: Bug reports and feature requests
-- **GitHub Discussions**: General questions and discussions
-- **Email**: msc.framework@gmail.com
+### Documentación
 
-### Code Review Process
+- [README.md](README.md) - Documentación principal
+- [docs/](docs/) - Documentación detallada
+- [Ejemplos](examples/) - Ejemplos de uso
 
-1. **Automated checks** must pass
-2. **Code review** by maintainers
-3. **Testing** in different environments
-4. **Documentation** review
-5. **Security** review if applicable
+### Herramientas
 
-## 🏆 Recognition
+- **Pre-commit**: Hooks automáticos
+- **Black**: Formateo de código
+- **Flake8**: Linting
+- **MyPy**: Type checking
+- **Bandit**: Security scanning
+- **Pytest**: Testing framework
 
-Contributors will be recognized in:
-- CONTRIBUTORS.md file
-- Release notes
-- Project documentation
-- GitHub contributors list
+### Comunidad
 
-## 📄 License
+- [GitHub Discussions](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/discussions)
+- [GitHub Issues](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues)
+- Email: msc.framework@gmail.com
 
-By contributing to MNEME, you agree that your contributions will be licensed under the same license as the project (BUSL-1.1).
+## 🎯 Roadmap de Contribuciones
 
-## 🙏 Thank You
+### Prioridades Actuales
 
-Thank you for contributing to MNEME! Your contributions help make this project better for everyone.
+1. **Optimización de Rendimiento**
+   - Mejorar algoritmos de descomposición
+   - Optimizar procesamiento paralelo
+   - Reducir latencia de síntesis
+
+2. **Seguridad Avanzada**
+   - Implementar nuevos algoritmos post-cuánticos
+   - Mejorar gestión de claves
+   - Optimizar rotación automática
+
+3. **Almacenamiento Inteligente**
+   - Nuevos backends de almacenamiento
+   - Mejorar algoritmos de migración
+   - Optimizar compresión adaptativa
+
+4. **Monitoreo y Métricas**
+   - Nuevas métricas de rendimiento
+   - Alertas inteligentes
+   - Dashboards de monitoreo
+
+### Contribuciones Bienvenidas
+
+- 🐛 Bug fixes
+- ✨ Nuevas funcionalidades
+- 📚 Documentación
+- 🧪 Tests
+- 🎨 Mejoras de UI/UX
+- ⚡ Optimizaciones de rendimiento
+- 🔒 Mejoras de seguridad
+
+## 📄 Licencia
+
+Al contribuir, aceptas que tu código será licenciado bajo la Business Source License 1.1 (BUSL-1.1).
+
+## 🙏 Reconocimientos
+
+Gracias a todos los contribuidores que hacen posible MNEME v2.0:
+
+- **Esraderey** - Creador principal
+- **Raul Cruz Acosta** - Co-creador
+- **Contribuidores de la comunidad** - Mejoras y feedback
 
 ---
 
-*"La mejor compresión no es guardar los datos, sino guardar la receta para recrearlos."* – Esraderey y Raul Cruz Acosta
+*"La mejor contribución no es solo código, sino la pasión por hacer la memoria computacional más eficiente y segura."* – Equipo MNEME

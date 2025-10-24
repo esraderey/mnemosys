@@ -1,0 +1,65 @@
+# MNEME v2.0 Code Owners (Safetensors + Locks Granulares)
+# This file defines who is responsible for different parts of the codebase
+
+# Global owners
+* @esraderey @raulcruzacosta
+
+# Core MNEME functionality
+src/mneme/mneme_core.py @esraderey @raulcruzacosta
+src/mneme/__init__.py @esraderey @raulcruzacosta
+
+# PyTorch integration
+src/mneme/mneme_torch.py @raulcruzacosta @esraderey
+
+# Security module
+src/mneme/mneme_security.py @esraderey @raulcruzacosta
+
+# Optimization module
+src/mneme/mneme_optimization.py @raulcruzacosta @esraderey
+
+# Tests
+tests/ @esraderey @raulcruzacosta
+tests/test_mneme.py @esraderey @raulcruzacosta
+
+# Examples
+examples/ @esraderey @raulcruzacosta
+examples/example_mneme.py @esraderey @raulcruzacosta
+
+# Documentation
+README.md @esraderey @raulcruzacosta
+CONTRIBUTING.md @esraderey @raulcruzacosta
+SECURITY.md @esraderey @raulcruzacosta
+CHANGELOG.md @esraderey @raulcruzacosta
+CONTRIBUTORS.md @esraderey @raulcruzacosta
+LICENSE @esraderey @raulcruzacosta
+
+# Configuration files
+setup.py @esraderey @raulcruzacosta
+requirements.txt @esraderey @raulcruzacosta
+pyproject.toml @esraderey @raulcruzacosta
+config.example.env @esraderey @raulcruzacosta
+
+# GitHub workflows
+.github/ @esraderey @raulcruzacosta
+.github/workflows/ @esraderey @raulcruzacosta
+.github/ISSUE_TEMPLATE/ @esraderey @raulcruzacosta
+
+# Pre-commit configuration
+.pre-commit-config.yaml @esraderey @raulcruzacosta
+
+# Security-related files
+SECURITY.md @esraderey
+.github/workflows/security.yml @esraderey
+.github/ISSUE_TEMPLATE/security_report.md @esraderey
+
+# Performance-related files
+.github/workflows/performance.yml @raulcruzacosta
+.github/workflows/ci.yml @raulcruzacosta
+
+# Documentation files
+docs/ @esraderey @raulcruzacosta
+docs/README.md @esraderey @raulcruzacosta
+docs/SERIALIZATION_UPGRADE.md @esraderey @raulcruzacosta
+docs/ENCRYPTION_AND_CONTEXT_UPGRADE.md @esraderey @raulcruzacosta
+docs/ADVANCED_STORAGE_UPGRADE.md @raulcruzacosta @esraderey
+docs/CONTEXT_DEDUPLICATION_UPGRADE.md @esraderey @raulcruzacosta
