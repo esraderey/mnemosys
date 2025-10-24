@@ -5,7 +5,6 @@
 [![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL--1.1-blue.svg)](https://opensource.org/licenses/BUSL-1.1)
 [![Security](https://img.shields.io/badge/Security-Enterprise-green.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
 [![Performance](https://img.shields.io/badge/Performance-Optimized-orange.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
-[![Version](https://img.shields.io/badge/Version-2.0.0-purple.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
 
 **MNEME** (pronunciado *"neme"*) redefine la memoria computacional mediante un motor neural inspirado en estructuras biológicas.  
 En lugar de almacenar datos en ubicaciones fijas, **MNEME guarda descriptores compactos y generativos** que reconstruyen el contenido de forma determinista, como si fueran recuerdos que emergen bajo demanda.
@@ -54,10 +53,6 @@ tensor = mneme.synthesize(descriptor)  # Reconstrucción determinista
 
 🔹 **Optimización automática** – gestión inteligente de memoria (CPU/GPU) y rendimiento sostenido
 
-🔹 **Deduplicación de contexto** – identificación y agrupación automática de contextos similares
-
-🔹 **Almacenamiento avanzado** – múltiples backends con cache inteligente y compresión adaptativa
-
 ## 📊 Métricas de Rendimiento
 
 | Métrica | Rendimiento |
@@ -69,37 +64,24 @@ tensor = mneme.synthesize(descriptor)  # Reconstrucción determinista
 | Ahorro de memoria VRAM | >90% con caché en CPU |
 | Verificación HMAC | <10μs por operación |
 | Throughput paralelo | 8x aceleración con 8 cores |
-| Deduplicación de contexto | 60-80% ahorro en contextos similares |
-| Compresión adaptativa | 5-15x ratio de compresión |
 
-## 🏗️ Estructura del Proyecto
+<details>
+<summary><b>📊 Exportar a Hojas de cálculo</b></summary>
+
+Puedes copiar la siguiente tabla para importar en Excel, Google Sheets o cualquier aplicación de hojas de cálculo:
 
 ```
-MNEME---Motor-de-Memoria-Neural-M-rfica/
-├── src/mneme/                    # Código fuente principal
-│   ├── __init__.py              # Exports principales
-│   ├── mneme_core.py            # Núcleo del sistema
-│   ├── mneme_torch.py           # Integración PyTorch
-│   ├── mneme_security.py        # Sistema de seguridad
-│   └── mneme_optimization.py    # Optimizaciones
-├── examples/                     # Ejemplos de uso
-│   ├── example_mneme.py         # Ejemplo básico
-│   ├── example_advanced_serialization.py
-│   ├── example_advanced_encryption.py
-│   └── example_context_deduplication.py
-├── docs/                        # Documentación
-│   ├── README.md               # Este archivo
-│   ├── SERIALIZATION_UPGRADE.md
-│   ├── ENCRYPTION_AND_CONTEXT_UPGRADE.md
-│   ├── ADVANCED_STORAGE_UPGRADE.md
-│   └── CONTEXT_DEDUPLICATION_UPGRADE.md
-├── tests/                       # Tests unitarios
-│   └── test_mneme.py
-├── scripts/                     # Scripts de utilidad
-├── requirements.txt             # Dependencias
-├── setup.py                    # Configuración del paquete
-└── LICENSE                     # Licencia
+Métrica	Rendimiento
+Ratio de compresión	10–20x en transformadores
+Latencia de síntesis	<150μs (tiles de 256KB)
+Latencia de caché (CPU)	<1μs
+Pérdida de calidad	<1% en inferencia ML
+Ahorro de memoria VRAM	>90% con caché en CPU
+Verificación HMAC	<10μs por operación
+Throughput paralelo	8x aceleración con 8 cores
 ```
+
+</details>
 
 ## 🛠️ Instalación
 
@@ -116,13 +98,13 @@ MNEME---Motor-de-Memoria-Neural-M-rfica/
 pip install mneme
 ```
 
-### Instalación desde fuente
+### Instalación completa con todas las funcionalidades
 
 ```bash
 git clone https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica.git
 cd MNEME---Motor-de-Memoria-Neural-M-rfica
 pip install -r requirements.txt
-pip install -e .
+pip install -e .[all]
 ```
 
 ### Instalación con optimizaciones
@@ -148,7 +130,7 @@ pip install -e .[optimization]
 ```python
 import torch
 import secrets
-from mneme import ZSpace, MnemeConfig, CompressionLevel
+from mneme_core import ZSpace, MnemeConfig, CompressionLevel
 
 # 1. Configurar el motor de forma centralizada
 config = MnemeConfig(
@@ -171,7 +153,7 @@ with ZSpace(config) as mneme:
 
 ```python
 import torch.nn as nn
-from mneme import compress_model, get_compression_stats, CompressionConfig
+from mneme_torch import compress_model, get_compression_stats, CompressionConfig
 
 # Configuración de compresión
 config = CompressionConfig(
@@ -194,7 +176,7 @@ print(f"Compresión lograda: {stats['overall_ratio']:.1%}")
 ### Capas MNEME transparentes
 
 ```python
-from mneme import ZLinear, ZConv2d, ZAttention, ZTransformerBlock
+from mneme_torch import ZLinear, ZConv2d, ZAttention, ZTransformerBlock
 
 # Reemplazo directo de capas PyTorch
 model = nn.Sequential(
@@ -216,7 +198,7 @@ transformer = ZTransformerBlock(
 ### Seguridad empresarial
 
 ```python
-from mneme import SecurityManager, SecurityLevel
+from mneme_security import SecurityManager, SecurityLevel
 
 # Configurar seguridad
 security_manager = SecurityManager(
@@ -236,7 +218,7 @@ signature_ok = secure_desc.verify_signature()
 ### Optimización de rendimiento
 
 ```python
-from mneme import MNEMEOptimizer, OptimizationLevel
+from mneme_optimization import MNEMEOptimizer, OptimizationLevel
 
 # Configurar optimizador
 optimizer = MNEMEOptimizer(
@@ -254,30 +236,6 @@ optimized = optimizer.optimize_tensor_operations(tensors)
 report = optimizer.get_optimization_report()
 ```
 
-### Deduplicación de contexto
-
-```python
-from mneme import ZSpace, MnemeConfig, ContextSimilarityMethod
-
-# Configurar deduplicación de contexto
-config = MnemeConfig(
-    enable_context_deduplication=True,
-    context_similarity_method=ContextSimilarityMethod.HYBRID,
-    context_similarity_threshold=0.8
-)
-
-zspace = ZSpace(config)
-
-# Procesar contextos para deduplicación
-result = zspace.process_context_for_deduplication(
-    "my_context", tensor, {"type": "feature_map"}
-)
-
-# Obtener estadísticas de deduplicación
-stats = zspace.get_context_deduplication_stats()
-print(f"Deduplication rate: {stats['deduplication_rate']:.2%}")
-```
-
 ## 🏗️ Arquitectura Avanzada
 
 ```
@@ -291,7 +249,6 @@ print(f"Deduplication rate: {stats['deduplication_rate']:.2%}")
 │   Motores de Descomposición: TT | CP | Tucker | SVD | Quantized   │
 │   + Compresión (LZ4) + Firmado HMAC + Serialización Segura      │
 │   + Gestión de Memoria (CPU/GPU) + Procesamiento Paralelo       │
-│   + Deduplicación de Contexto + Almacenamiento Avanzado        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -304,8 +261,6 @@ print(f"Deduplication rate: {stats['deduplication_rate']:.2%}")
 **Update** → Delta → Compress → Append chain → New version → Consolidate (if needed)
 
 **Security** → Verify Signature → Verify Checksum → Audit → Monitor
-
-**Context Deduplication** → Analyze → Compare → Cluster → Compress → Store
 
 ## 📈 Benchmarks Avanzados
 
@@ -323,18 +278,6 @@ print(f"Deduplication rate: {stats['deduplication_rate']:.2%}")
 - MNEME: 2,555,703 (10x compresión)
 - Uso de memoria VRAM: –90%
 - Pérdida de precisión: <0.3%
-
-### Deduplicación de Contexto
-
-**Procesamiento de imágenes**
-- Contextos similares: 60-80% deduplicación
-- Ahorro de almacenamiento: 40-60%
-- Tiempo de análisis: <5ms por contexto
-
-**Modelos de ML**
-- Embeddings similares: 70-85% deduplicación
-- Compresión adicional: 5-15x
-- Latencia de clustering: <10ms
 
 ### Rendimiento de Seguridad
 
@@ -358,7 +301,6 @@ print(f"Deduplication rate: {stats['deduplication_rate']:.2%}")
 - Árboles Merkle para pruebas de integridad de datos fragmentados
 - Arquitectura segura por defecto con generación de claves transitorias
 - Múltiples niveles de seguridad (BASIC → MAXIMUM)
-- Cifrado de tensores con rotación automática de claves
 
 ### ⚡ **Optimización de Rendimiento**
 - Profiler integrado con métricas detalladas
@@ -374,20 +316,6 @@ print(f"Deduplication rate: {stats['deduplication_rate']:.2%}")
 - Configuración flexible por capa
 - Estadísticas de rendimiento en tiempo real
 
-### 🗄️ **Almacenamiento Avanzado**
-- Múltiples backends (Memoria, Disco, Redis, S3, HDFS, Híbrido)
-- Cache inteligente con políticas LRU, LFU, FIFO, LIFO, TTL, Adaptativo
-- Compresión adaptativa con LZ4, ZSTD, GZIP
-- Deduplicación de contenido con SHA256
-- Métricas detalladas de almacenamiento
-
-### 🧠 **Deduplicación de Contexto**
-- Análisis semántico de contextos similares
-- Clustering automático con múltiples algoritmos
-- Compresión basada en características
-- Cache de contexto optimizado
-- Métricas de ahorro de almacenamiento
-
 ## 🎮 Aplicaciones
 
 ### **Machine Learning**
@@ -395,28 +323,24 @@ print(f"Deduplication rate: {stats['deduplication_rate']:.2%}")
 - Entrenamiento distribuido eficiente
 - Inferencia en dispositivos edge
 - Optimización de memoria en GPU
-- Deduplicación de embeddings y representaciones
 
 ### **Simulaciones y Juegos**
 - Mundos de juego infinitos y ligeros
 - Estados de simulación masivos
 - Física en tiempo real
 - Procedural generation
-- Contextos de simulación reutilizables
 
 ### **Ciencia de Datos**
 - Análisis de datasets masivos
 - Compresión de matrices dispersas
 - Cálculos científicos optimizados
 - Visualización de datos grandes
-- Análisis de patrones en contextos
 
 ### **Seguridad y Auditoría**
 - Sistemas de logging seguros
 - Verificación de integridad
 - Trazabilidad de datos
 - Compliance empresarial
-- Auditoría de contextos procesados
 
 ## 🗺️ Roadmap
 
@@ -427,10 +351,6 @@ print(f"Deduplication rate: {stats['deduplication_rate']:.2%}")
 - [x] Seguridad Robusta (HMAC + Serialización Segura)
 - [x] Árboles Merkle
 - [x] Optimización de rendimiento y memoria
-- [x] Serialización avanzada con múltiples formatos
-- [x] Cifrado de tensores y rotación de claves
-- [x] Almacenamiento avanzado con múltiples backends
-- [x] Deduplicación de contexto inteligente
 
 ### 🚧 **Fase 2 – Aceleración HW (Q2 2025)**
 - [ ] Kernels CUDA optimizados
@@ -438,7 +358,6 @@ print(f"Deduplication rate: {stats['deduplication_rate']:.2%}")
 - [ ] Caché NVMe inteligente
 - [ ] Aceleración GPU masiva
 - [ ] Integración con TensorRT
-- [ ] Hardware de deduplicación de contexto
 
 ### 🔮 **Fase 3 – Silicio (Q4 2025)**
 - [ ] Diseño de MMU-MNEME
@@ -446,14 +365,6 @@ print(f"Deduplication rate: {stats['deduplication_rate']:.2%}")
 - [ ] Integración en OS
 - [ ] Hardware security module
 - [ ] Red neuronal dedicada
-- [ ] Chip de deduplicación de contexto
-
-## 📚 Documentación
-
-- **[Serialización Avanzada](docs/SERIALIZATION_UPGRADE.md)** - Sistema de serialización seguro
-- **[Cifrado y Contexto](docs/ENCRYPTION_AND_CONTEXT_UPGRADE.md)** - Cifrado de tensores y gestión de claves
-- **[Almacenamiento Avanzado](docs/ADVANCED_STORAGE_UPGRADE.md)** - Sistema de almacenamiento y cache
-- **[Deduplicación de Contexto](docs/CONTEXT_DEDUPLICATION_UPGRADE.md)** - Sistema de deduplicación inteligente
 
 ## 👥 Autores
 
