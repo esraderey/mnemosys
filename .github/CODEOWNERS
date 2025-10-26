@@ -1,65 +1,49 @@
-# MNEME v2.0 Code Owners (Safetensors + Locks Granulares)
+# MNEME v2.0.1 - Code Owners
 # This file defines who is responsible for different parts of the codebase
 
 # Global owners
-* @esraderey @raulcruzacosta
+* @esraderey
 
-# Core MNEME functionality
-src/mneme/mneme_core.py @esraderey @raulcruzacosta
-src/mneme/__init__.py @esraderey @raulcruzacosta
+# Core modules
+src/mneme/mneme_core_fixed.py @esraderey
+src/mneme/mneme_core.py @esraderey
+src/mneme/__init__.py @esraderey
+
+# Security modules
+src/mneme/mneme_security_core.py @esraderey
+
+# Storage modules
+src/mneme/mneme_storage_core.py @esraderey
 
 # PyTorch integration
-src/mneme/mneme_torch.py @raulcruzacosta @esraderey
+src/mneme/mneme_torch.py @esraderey
 
-# Security module
-src/mneme/mneme_security.py @esraderey @raulcruzacosta
-
-# Optimization module
-src/mneme/mneme_optimization.py @raulcruzacosta @esraderey
-
-# Tests
-tests/ @esraderey @raulcruzacosta
-tests/test_mneme.py @esraderey @raulcruzacosta
-
-# Examples
-examples/ @esraderey @raulcruzacosta
-examples/example_mneme.py @esraderey @raulcruzacosta
+# Optimization modules
+src/mneme/mneme_optimization.py @esraderey
 
 # Documentation
-README.md @esraderey @raulcruzacosta
-CONTRIBUTING.md @esraderey @raulcruzacosta
-SECURITY.md @esraderey @raulcruzacosta
-CHANGELOG.md @esraderey @raulcruzacosta
-CONTRIBUTORS.md @esraderey @raulcruzacosta
-LICENSE @esraderey @raulcruzacosta
+README.md @esraderey
+CHANGELOG.md @esraderey
+CONTRIBUTING.md @esraderey
+docs/ @esraderey
 
 # Configuration files
-setup.py @esraderey @raulcruzacosta
-requirements.txt @esraderey @raulcruzacosta
-pyproject.toml @esraderey @raulcruzacosta
-config.example.env @esraderey @raulcruzacosta
+pyproject.toml @esraderey
+setup.py @esraderey
+requirements.txt @esraderey
+Makefile @esraderey
+config.example.env @esraderey
 
 # GitHub workflows
-.github/ @esraderey @raulcruzacosta
-.github/workflows/ @esraderey @raulcruzacosta
-.github/ISSUE_TEMPLATE/ @esraderey @raulcruzacosta
+.github/workflows/ @esraderey
+.github/dependabot.yml @esraderey
+.github/CODEOWNERS @esraderey
 
-# Pre-commit configuration
-.pre-commit-config.yaml @esraderey @raulcruzacosta
+# Examples
+examples/ @esraderey
 
-# Security-related files
-SECURITY.md @esraderey
-.github/workflows/security.yml @esraderey
-.github/ISSUE_TEMPLATE/security_report.md @esraderey
+# Tests
+tests/ @esraderey
 
-# Performance-related files
-.github/workflows/performance.yml @raulcruzacosta
-.github/workflows/ci.yml @raulcruzacosta
-
-# Documentation files
-docs/ @esraderey @raulcruzacosta
-docs/README.md @esraderey @raulcruzacosta
-docs/SERIALIZATION_UPGRADE.md @esraderey @raulcruzacosta
-docs/ENCRYPTION_AND_CONTEXT_UPGRADE.md @esraderey @raulcruzacosta
-docs/ADVANCED_STORAGE_UPGRADE.md @raulcruzacosta @esraderey
-docs/CONTEXT_DEDUPLICATION_UPGRADE.md @esraderey @raulcruzacosta
+# Scripts
+scripts/ @esraderey

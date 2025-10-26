@@ -1,77 +1,70 @@
 ---
 name: ✨ Feature Request
-about: Sugerir una nueva funcionalidad para MNEME v2.0
+about: Proponer una nueva funcionalidad para MNEME
 title: '[FEATURE] '
 labels: ['enhancement', 'needs-triage']
-assignees: ''
+assignees: 'esraderey'
 ---
 
 ## ✨ Descripción de la Funcionalidad
-[Descripción clara y concisa de la funcionalidad que te gustaría ver]
+<!-- Describe claramente la funcionalidad propuesta -->
 
 ## 🎯 Caso de Uso
-[Descripción del problema que esta funcionalidad resolvería o el caso de uso que habilitaría]
+<!-- Describe por qué sería útil esta funcionalidad -->
 
-## 💡 Solución Propuesta
-[Descripción clara de lo que quieres que pase]
+## 💡 Implementación Propuesta
+<!-- Describe ideas sobre cómo implementar esta funcionalidad -->
 
 ## 🔄 Alternativas Consideradas
-[Descripción de cualquier solución alternativa o funcionalidad que hayas considerado]
+<!-- Describe otras opciones que has considerado -->
+
+## 📊 Impacto
+<!-- Describe el impacto en rendimiento, seguridad, etc. -->
+
+- **Rendimiento**: [e.g. Mejora, Sin impacto, Degradación]
+- **Seguridad**: [e.g. Mejora, Sin impacto, Riesgo]
+- **Memoria**: [e.g. Ahorro, Sin impacto, Mayor uso]
+- **Compatibilidad**: [e.g. Compatible, Breaking change]
+
+## 🧪 Testing
+<!-- Describe cómo se probaría esta funcionalidad -->
+
+## 📚 Documentación
+<!-- Describe qué documentación sería necesaria -->
+
+## 🔗 Relacionado
+<!-- Lista issues o PRs relacionados -->
+
+- Relacionado con #
+- Bloqueado por #
+- Bloquea #
 
 ## 🏷️ Categoría
-- [ ] Procesamiento Paralelo
-- [ ] Seguridad Cuántica
-- [ ] Almacenamiento Inteligente
-- [ ] Monitoreo de Rendimiento
-- [ ] Integración PyTorch
-- [ ] Optimización Automática
-- [ ] API/Interfaz
-- [ ] Documentación
-- [ ] Testing
-- [ ] Otro
+<!-- Marca con [x] la categoría que aplica -->
 
-## 📊 Impacto Esperado
-- [ ] Alto (mejora significativa)
-- [ ] Medio (mejora moderada)
-- [ ] Bajo (mejora menor)
+- [ ] 🚀 Rendimiento
+- [ ] 🔒 Seguridad
+- [ ] 🗄️ Almacenamiento
+- [ ] 📊 Monitoreo
+- [ ] 🧠 Núcleo Inteligente
+- [ ] 🔗 Integración PyTorch
+- [ ] ⚡ Procesamiento Paralelo
+- [ ] 🎮 Aplicaciones
+- [ ] 📚 Documentación
+- [ ] 🧪 Testing
 
-## 🎨 Mockups/Diagramas
-[Si aplica, agregar mockups, diagramas o ejemplos visuales]
+## 📸 Mockups/Diagramas
+<!-- Agrega mockups o diagramas si aplica -->
 
-## 📝 Ejemplo de Uso
-```python
-# Ejemplo de cómo te gustaría usar la nueva funcionalidad
-from mneme import ZSpace, NewFeature
+## 🔍 Información Adicional
+<!-- Agrega cualquier información adicional relevante -->
 
-mneme = ZSpace()
-# ... código de ejemplo
-```
+## 🏷️ Labels
+<!-- Agrega labels adicionales si aplica -->
 
-## 🔧 Implementación Propuesta
-[Si tienes ideas sobre cómo implementar esta funcionalidad]
-
-## 📚 Referencias
-[Enlaces a documentación, papers, o implementaciones similares]
-
-## 🏷️ Etiquetas Adicionales
-- [ ] Breaking Change
-- [ ] Backward Compatible
-- [ ] Performance Critical
-- [ ] Security Related
-- [ ] User Interface
-- [ ] Developer Experience
-
-## 📊 Prioridad
-- [ ] Crítica (necesaria para el proyecto)
-- [ ] Alta (muy importante)
-- [ ] Media (importante)
-- [ ] Baja (nice to have)
-
-## 🤝 ¿Estarías dispuesto a contribuir?
-- [ ] Sí, puedo implementar esta funcionalidad
-- [ ] Sí, puedo ayudar con testing
-- [ ] Sí, puedo ayudar con documentación
-- [ ] No, solo sugiero la funcionalidad
-
-## 📚 Contexto Adicional
-[Cualquier otra información relevante sobre la funcionalidad solicitada]
+- [ ] high-priority
+- [ ] breaking-change
+- [ ] performance-critical
+- [ ] security-related
+- [ ] user-experience
+- [ ] developer-experience

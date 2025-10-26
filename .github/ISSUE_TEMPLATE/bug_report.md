@@ -1,82 +1,65 @@
 ---
 name: 🐛 Bug Report
-about: Reportar un bug en MNEME v2.0
+about: Reportar un bug en MNEME
 title: '[BUG] '
 labels: ['bug', 'needs-triage']
-assignees: ''
+assignees: 'esraderey'
 ---
 
 ## 🐛 Descripción del Bug
-[Descripción clara y concisa del problema]
+<!-- Describe claramente el problema -->
 
 ## 🔄 Pasos para Reproducir
-1. Ir a '...'
-2. Hacer clic en '...'
-3. Desplazarse hasta '...'
-4. Ver error
+<!-- Lista los pasos para reproducir el bug -->
 
-## ✅ Comportamiento Esperado
-[Descripción clara de lo que debería pasar]
+1. 
+2. 
+3. 
+4. 
+
+## 🎯 Comportamiento Esperado
+<!-- Describe lo que debería pasar -->
 
 ## ❌ Comportamiento Actual
-[Descripción clara de lo que está pasando]
+<!-- Describe lo que está pasando actualmente -->
 
-## 📸 Capturas de Pantalla
-[Si aplica, agregar capturas de pantalla para ayudar a explicar el problema]
+## 📊 Información del Sistema
+<!-- Completa la información del sistema -->
 
-## 🖥️ Información del Sistema
-- **OS**: [ej. Windows 10, macOS 12, Ubuntu 20.04]
-- **Python**: [ej. 3.8.10, 3.9.7, 3.10.0]
-- **PyTorch**: [ej. 1.12.0, 2.0.0]
-- **MNEME**: [ej. 2.0.0]
-- **Safetensors**: [ej. 0.3.0+]
-- **RAM**: [ej. 8GB, 16GB, 32GB]
-- **GPU**: [ej. NVIDIA RTX 3080, AMD RX 6800, CPU only]
-
-## 📋 Configuración
-```env
-# Configuración relevante (sin claves sensibles)
-MNEME_CACHE_SIZE_MB=1024
-MNEME_COMPRESSION_LEVEL=6
-MNEME_ENABLE_PARALLEL_PROCESSING=true
-MNEME_SECURITY_LEVEL=STANDARD
-```
+- **OS**: [e.g. Windows 11, macOS 13.0, Ubuntu 22.04]
+- **Python**: [e.g. 3.11.0]
+- **PyTorch**: [e.g. 2.1.0]
+- **MNEME**: [e.g. 2.0.1]
+- **GPU**: [e.g. NVIDIA RTX 4090, Apple M2, None]
 
 ## 📝 Logs
-```
-[Logs relevantes del error]
-```
+<!-- Agrega logs relevantes -->
 
-## 🔍 Código de Reproducción
-```python
-import torch
-from mneme import ZSpace, CompressionConfig
-
-# Código que reproduce el bug
-mneme = ZSpace()
-tensor = torch.randn(100, 100)
-desc = mneme.register("test", tensor)
-# ... más código
+```
+[Pega los logs aquí]
 ```
 
-## 🏷️ Etiquetas Adicionales
-- [ ] Procesamiento Paralelo
-- [ ] Seguridad
-- [ ] Almacenamiento
-- [ ] Monitoreo
-- [ ] PyTorch Integration
-- [ ] Performance
-- [ ] Memory
-- [ ] GPU
+## 🔧 Configuración
+<!-- Agrega configuración relevante (sin claves sensibles) -->
 
-## 📊 Impacto
-- [ ] Crítico (sistema no funciona)
-- [ ] Alto (funcionalidad principal afectada)
-- [ ] Medio (funcionalidad secundaria afectada)
-- [ ] Bajo (problema menor)
+```env
+[Pega la configuración aquí]
+```
 
-## 🔧 Solución Propuesta
-[Si tienes una idea de cómo solucionarlo]
+## 📸 Screenshots
+<!-- Agrega screenshots si aplica -->
 
-## 📚 Contexto Adicional
-[Cualquier otra información relevante sobre el problema]
+## 🔍 Información Adicional
+<!-- Agrega cualquier información adicional relevante -->
+
+## 🏷️ Labels
+<!-- Agrega labels adicionales si aplica -->
+
+- [ ] high-priority
+- [ ] security-related
+- [ ] performance-related
+- [ ] memory-leak
+- [ ] gpu-related
+- [ ] windows-specific
+- [ ] macos-specific
+- [ ] linux-specific

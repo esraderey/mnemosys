@@ -1,124 +1,77 @@
 # Pull Request
 
 ## 📋 Descripción
-[Descripción clara y concisa de los cambios realizados]
+<!-- Describe brevemente los cambios realizados -->
 
-## 🔗 Issue Relacionado
-[Enlace al issue que este PR resuelve, ej. #123]
+## 🔗 Tipo de Cambio
+<!-- Marca con [x] el tipo de cambio que aplica -->
 
-## 🏷️ Tipo de Cambio
 - [ ] 🐛 Bug fix (cambio que corrige un problema)
 - [ ] ✨ Nueva funcionalidad (cambio que agrega funcionalidad)
 - [ ] 💥 Breaking change (cambio que rompe compatibilidad)
 - [ ] 📚 Documentación (cambio solo en documentación)
-- [ ] 🧪 Tests (agregar o corregir tests)
-- [ ] 🔧 Refactoring (cambio de código que no corrige bugs ni agrega funcionalidad)
-- [ ] ⚡ Performance (cambio que mejora el rendimiento)
-- [ ] 🔒 Security (cambio relacionado con seguridad)
+- [ ] 🧪 Testing (cambio en tests)
+- [ ] ⚡ Rendimiento (mejora de rendimiento)
+- [ ] 🔒 Seguridad (mejora de seguridad)
+- [ ] 🗄️ Almacenamiento (cambio en almacenamiento)
+- [ ] 📊 Monitoreo (cambio en monitoreo)
 
 ## 🧪 Testing
-- [ ] Tests unitarios agregados/corregidos
-- [ ] Tests de integración agregados/corregidos
-- [ ] Tests de rendimiento ejecutados
-- [ ] Tests de seguridad ejecutados
-- [ ] Todos los tests pasan localmente
+<!-- Describe las pruebas realizadas -->
 
-## 📋 Checklist
-- [ ] Mi código sigue las guías de estilo del proyecto
-- [ ] He realizado una auto-revisión de mi código
-- [ ] He comentado mi código, especialmente en áreas difíciles de entender
-- [ ] He hecho los cambios correspondientes en la documentación
-- [ ] Mis cambios no generan warnings nuevos
-- [ ] He agregado tests que prueban que mi fix es efectivo o que mi funcionalidad funciona
-- [ ] Tests nuevos y existentes pasan localmente con mis cambios
-- [ ] Cualquier cambio dependiente ha sido mergeado y publicado
-
-## 🔍 Cambios Detallados
-
-### Archivos Modificados
-- [ ] `src/mneme/mneme_core.py`
-- [ ] `src/mneme/mneme_torch.py`
-- [ ] `src/mneme/mneme_security.py`
-- [ ] `src/mneme/mneme_optimization.py`
-- [ ] `src/mneme/__init__.py`
-- [ ] `tests/test_mneme.py`
-- [ ] `examples/example_mneme.py`
-- [ ] `README.md`
-- [ ] `CONTRIBUTING.md`
-- [ ] `SECURITY.md`
-- [ ] Otro: _______________
-
-### Funcionalidades Agregadas
-- [ ] Procesamiento paralelo
-- [ ] Seguridad cuántica
-- [ ] Almacenamiento inteligente
-- [ ] Monitoreo de rendimiento
-- [ ] Integración PyTorch
-- [ ] Optimización automática
-- [ ] Otro: _______________
+- [ ] Tests unitarios pasan
+- [ ] Tests de integración pasan
+- [ ] Tests de rendimiento pasan
+- [ ] Tests de seguridad pasan
+- [ ] Cobertura de código >90%
 
 ## 📊 Impacto en Rendimiento
-- [ ] Mejora significativa (>20%)
-- [ ] Mejora moderada (5-20%)
-- [ ] Sin impacto significativo
-- [ ] Degradación menor (<5%)
-- [ ] Degradación significativa (>5%)
+<!-- Describe el impacto en rendimiento si aplica -->
 
-## 🔒 Impacto en Seguridad
-- [ ] Mejora la seguridad
-- [ ] Sin impacto en seguridad
-- [ ] Requiere revisión de seguridad
-- [ ] Potencial impacto negativo
+- [ ] Sin impacto en rendimiento
+- [ ] Mejora de rendimiento
+- [ ] Degradación de rendimiento (justificar)
+
+## 🔒 Consideraciones de Seguridad
+<!-- Describe consideraciones de seguridad si aplica -->
+
+- [ ] No hay cambios de seguridad
+- [ ] Cambios de seguridad documentados
+- [ ] Validación de entrada mejorada
+- [ ] Nuevas vulnerabilidades introducidas (justificar)
 
 ## 📚 Documentación
+<!-- Describe cambios en documentación -->
+
 - [ ] README.md actualizado
-- [ ] Docstrings agregados/actualizados
-- [ ] Ejemplos de uso agregados
-- [ ] Guías de contribución actualizadas
-- [ ] Documentación de seguridad actualizada
+- [ ] CHANGELOG.md actualizado
+- [ ] Documentación de API actualizada
+- [ ] Ejemplos actualizados
 
-## 🧪 Testing
-```bash
-# Comandos ejecutados para testing
-python -m pytest tests/ -v
-python -m pytest tests/ --cov=src/mneme --cov-report=html
-python examples/example_mneme.py
-```
+## 🔍 Checklist
+<!-- Marca con [x] los elementos completados -->
 
-## 📸 Capturas de Pantalla
-[Si aplica, agregar capturas de pantalla para mostrar cambios visuales]
+- [ ] Código sigue las guías de estilo del proyecto
+- [ ] Self-review del código realizada
+- [ ] Comentarios explicativos agregados en código complejo
+- [ ] Documentación actualizada
+- [ ] Tests agregados/actualizados
+- [ ] No hay warnings de linting
+- [ ] No hay errores de type checking
+- [ ] No hay vulnerabilidades de seguridad
 
-## 🔍 Código de Ejemplo
-```python
-# Ejemplo de cómo usar las nuevas funcionalidades
-from mneme import ZSpace, CompressionConfig
+## 📸 Screenshots (si aplica)
+<!-- Agrega screenshots si los cambios afectan la UI -->
 
-# Código de ejemplo
-mneme = ZSpace()
-# ... más código
-```
+## 🎯 Casos de Uso
+<!-- Describe casos de uso específicos si aplica -->
 
-## 📊 Métricas
-[Si aplica, agregar métricas de rendimiento, benchmarks, etc.]
-
-## 🚀 Deployment
-- [ ] Cambios compatibles con versiones anteriores
-- [ ] Requiere migración de datos
-- [ ] Requiere actualización de configuración
-- [ ] Requiere actualización de dependencias
+## 🔄 Breaking Changes
+<!-- Lista breaking changes si los hay -->
 
 ## 📝 Notas Adicionales
-[Cualquier información adicional relevante para los revisores]
-
-## 🔍 Revisores Sugeridos
-[@esraderey, @raulcruzacosta]
-
-## 📞 Contacto
-- **Autor**: [Tu nombre]
-- **Email**: [Tu email]
-- **GitHub**: [Tu username]
+<!-- Agrega cualquier información adicional relevante -->
 
 ---
 
-## 🎯 Resumen
-[Resumen breve de los cambios y su impacto]
+**Nota**: Este PR será revisado por el equipo de MNEME antes de ser mergeado.

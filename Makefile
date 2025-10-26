@@ -1,7 +1,7 @@
-# MNEME v2.0 Makefile
-# Motor de Memoria Neural Mórfica (Safetensors + Locks Granulares)
+# MNEME v2.0.1 Makefile
+# Motor de Memoria Neural Mórfica (Safetensors + Locks Granulares + Optimizaciones)
 
-.PHONY: help install install-dev test lint format clean build publish docs
+.PHONY: help install install-dev test lint format clean build publish docs performance-test security-check pre-commit
 
 help: ## Show this help message
 	@echo "MNEME - Motor de Memoria Neural Mórfica"
@@ -86,3 +86,59 @@ dev-setup: install-dev setup-pre-commit ## Setup development environment
 
 # Development shortcuts
 dev: dev-setup ## Alias for dev-setup
+
+# Performance testing
+performance-test: ## Run performance benchmarks and tests
+	python examples/example_mneme.py --benchmark
+	python examples/example_advanced_features.py --benchmark
+	@echo "Performance tests completed"
+
+# Security checks
+security-check: ## Run comprehensive security checks
+	bandit -r src/ -f json -o bandit-report.json
+	safety check --json --output safety-report.json || true
+	@echo "Security reports generated: bandit-report.json, safety-report.json"
+
+# Pre-commit setup
+pre-commit: ## Install and run pre-commit hooks
+	pre-commit install
+	pre-commit run --all-files
+
+# Full CI pipeline
+ci-full: clean install-dev lint test security-check performance-test ## Run complete CI pipeline
+	@echo "Full CI pipeline completed successfully"
+
+# Release preparation
+release-prep: clean lint test security-check build ## Prepare for release
+	@echo "Release preparation completed"
+	@echo "Package built in dist/ directory"
+	@echo "Run 'make publish' to upload to PyPI"
+
+# Memory profiling
+profile-memory: ## Run memory profiling tests
+	python -m memory_profiler examples/example_mneme.py
+	@echo "Memory profiling completed"
+
+# Type checking
+type-check: ## Run type checking with mypy
+	mypy src/ --ignore-missing-imports --no-strict-optional
+	@echo "Type checking completed"
+
+# Code coverage
+coverage: ## Generate detailed coverage report
+	python -m pytest tests/ --cov=src/mneme --cov-report=html --cov-report=term-missing --cov-report=xml
+	@echo "Coverage report generated in htmlcov/"
+
+# Documentation generation
+docs-build: ## Build documentation (if using Sphinx)
+	@echo "Building documentation..."
+	@echo "Documentation files are in docs/ directory"
+
+# Clean everything
+clean-all: clean ## Clean everything including Python cache
+	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	find . -type f -name "*.pyo" -delete 2>/dev/null || true
+	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	rm -rf .coverage htmlcov/ .pytest_cache/ .mypy_cache/ .ruff_cache/ 2>/dev/null || true
+	@echo "Complete cleanup finished"

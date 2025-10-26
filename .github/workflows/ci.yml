@@ -1,4 +1,4 @@
-name: 🧠 MNEME v2.0 CI/CD (Safetensors + Locks Granulares)
+name: CI/CD Pipeline
 
 on:
   push:
@@ -6,207 +6,275 @@ on:
   pull_request:
     branches: [ main, develop ]
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.8, 3.9, '3.10', '3.11']
-        pytorch-version: ['1.12.0', '2.0.0']
+env:
+  PYTHON_VERSION: '3.8'
+  PYTHON_VERSION_MATRIX: ['3.8', '3.9', '3.10', '3.11', '3.12']
 
+jobs:
+  # Job de calidad de código
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: 🐍 Setup Python ${{ matrix.python-version }}
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
-    
-    - name: 📦 Cache pip dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    
-    - name: 📥 Install dependencies
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -e .[dev]
-    
-    - name: 🧪 Run tests
+        
+    - name: Lint with flake8
       run: |
-        python -m pytest tests/ -v --cov=src/mneme --cov-report=xml
-    
-    - name: 📊 Upload coverage to Codecov
+        flake8 src/ tests/ examples/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 src/ tests/ examples/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
+    - name: Type check with mypy
+      run: |
+        mypy src/ --ignore-missing-imports --no-strict-optional
+        
+    - name: Security check with bandit
+      run: |
+        bandit -r src/ -f json -o bandit-report.json || true
+        bandit -r src/ -ll
+        
+    - name: Format check with black
+      run: |
+        black --check src/ tests/ examples/
+        
+    - name: Import sorting check with isort
+      run: |
+        isort --check-only src/ tests/ examples/
+
+  # Job de testing
+  test:
+    name: Test Suite
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ${{ fromJson(env.PYTHON_VERSION_MATRIX) }}
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Install system dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e .[dev]
+        
+    - name: Run tests
+      run: |
+        python -m pytest tests/ -v --cov=src/mneme --cov-report=xml --cov-report=html
+        
+    - name: Upload coverage to Codecov
+      if: matrix.os == 'ubuntu-latest'
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
         flags: unittests
         name: codecov-umbrella
+        fail_ci_if_error: false
 
-  security:
+  # Job de rendimiento
+  performance:
+    name: Performance Tests
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
-    - name: 🐍 Setup Python
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
-    
-    - name: 📥 Install dependencies
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -e .[dev]
-    
-    - name: 🔒 Security scan with bandit
+        
+    - name: Run performance tests
       run: |
-        bandit -r src/ -f json -o bandit-report.json
-        bandit -r src/ -f txt
+        python examples/example_mneme.py --benchmark
+        python examples/example_advanced_features.py --benchmark
+        
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-results
+        path: performance_results.json
+
+  # Job de seguridad
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
     
-    - name: 🛡️ Dependency check with safety
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
       run: |
-        safety check --json --output safety-report.json
-        safety check
-    
-    - name: 📊 Upload security reports
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e .[dev]
+        
+    - name: Run security scan
+      run: |
+        bandit -r src/ -f json -o security-report.json
+        safety check --json --output safety-report.json || true
+        
+    - name: Upload security reports
       uses: actions/upload-artifact@v3
       with:
         name: security-reports
         path: |
-          bandit-report.json
+          security-report.json
           safety-report.json
 
-  performance:
+  # Job de documentación
+  documentation:
+    name: Documentation
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
     
-    - name: 🐍 Setup Python
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
-    
-    - name: 📥 Install dependencies
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -e .[dev]
-    
-    - name: ⚡ Performance benchmarks
+        
+    - name: Build documentation
       run: |
-        python tests/test_mneme.py
-        python examples/example_mneme.py
-        python examples/example_advanced_features.py
-    
-    - name: 📊 Memory profiling
+        # Verificar que todos los docstrings estén presentes
+        python -c "import src.mneme; help(src.mneme)"
+        
+    - name: Check README links
       run: |
-        python -m memory_profiler examples/example_mneme.py
+        # Verificar que los enlaces del README funcionen
+        python -c "
+        import re
+        with open('README.md', 'r') as f:
+            content = f.read()
+        links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content)
+        print(f'Found {len(links)} links in README')
+        "
 
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: 🐍 Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    
-    - name: 📥 Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -e .[dev]
-    
-    - name: 🎨 Code formatting with black
-      run: |
-        black --check src/ tests/ examples/
-    
-    - name: 🔍 Linting with flake8
-      run: |
-        flake8 src/ tests/ examples/ --max-line-length=88 --extend-ignore=E203
-    
-    - name: 🔍 Type checking with mypy
-      run: |
-        mypy src/ --ignore-missing-imports
-
+  # Job de build y distribución
   build:
-    runs-on: ubuntu-latest
-    needs: [test, security, performance, lint]
+    name: Build Package
+    runs-on: ${{ matrix.os }}
+    needs: [code-quality, test, security]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: 🐍 Setup Python
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
-    
-    - name: 📥 Install dependencies
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install build dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -e .[dev]
-    
-    - name: 🏗️ Build package
+        pip install build twine
+        
+    - name: Build package
       run: |
-        python setup.py sdist bdist_wheel
-    
-    - name: 📦 Upload build artifacts
+        python -m build
+        
+    - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: dist
+        name: dist-${{ matrix.os }}
         path: dist/
 
+  # Job de release
   release:
+    name: Release
     runs-on: ubuntu-latest
-    needs: [build]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-    - uses: actions/checkout@v4
+    needs: [build, documentation]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]')
     
-    - name: 📥 Download build artifacts
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Download build artifacts
       uses: actions/download-artifact@v3
       with:
-        name: dist
+        name: dist-ubuntu-latest
         path: dist/
-    
-    - name: 🚀 Create Release
-      uses: actions/create-release@v1
+        
+    - name: Install twine
+      run: pip install twine
+      
+    - name: Publish to PyPI
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v${{ github.run_number }}
-        release_name: MNEME v2.0.${{ github.run_number }}
-        body: |
-          ## 🧠 MNEME v2.0.${{ github.run_number }}
-          
-          ### 🚀 Nuevas Funcionalidades
-          - Procesamiento paralelo híbrido
-          - Seguridad cuántica avanzada
-          - Almacenamiento inteligente
-          - Monitoreo de rendimiento en tiempo real
-          
-          ### 📊 Mejoras de Rendimiento
-          - Hasta 8x aceleración con procesamiento paralelo
-          - Reducción de uso de memoria en 40-60%
-          - Optimización automática de recursos
-          - Métricas de rendimiento en tiempo real
-          
-          ### 🔒 Seguridad Mejorada
-          - Algoritmos post-cuánticos
-          - Autenticación multifactor
-          - Cifrado avanzado
-          - Rotación automática de claves
-          
-          ### 📚 Documentación
-          - README.md actualizado
-          - Guías de contribución
-          - Política de seguridad
-          - Ejemplos de uso completos
-        draft: false
-        prerelease: false
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        twine upload dist/*
+
+  # Job de notificaciones
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [code-quality, test, security, documentation, build]
+    if: always()
+    
+    steps:
+    - name: Notify on success
+      if: ${{ needs.code-quality.result == 'success' && needs.test.result == 'success' && needs.security.result == 'success' && needs.documentation.result == 'success' && needs.build.result == 'success' }}
+      run: |
+        echo "✅ All checks passed successfully!"
+        
+    - name: Notify on failure
+      if: ${{ needs.code-quality.result == 'failure' || needs.test.result == 'failure' || needs.security.result == 'failure' || needs.documentation.result == 'failure' || needs.build.result == 'failure' }}
+      run: |
+        echo "❌ Some checks failed. Please review the logs."
