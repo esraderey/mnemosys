@@ -7,6 +7,12 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ## [2.0.1] - 2025-01-27
 
+### 🐛 Corregido
+- **Integración del SecureStorageBackend**: Corregido problema crítico donde el `SecureStorageBackend` nunca se utilizaba, funcionando como "dead code". Ahora ZSpace almacena y carga automáticamente tensores desde storage persistente.
+- **Serialización de SafeTensors**: Corregido manejo de archivos temporales para compatibilidad con SafeTensors en Windows.
+- **Serialización de ZDescriptor**: Corregida serialización de shapes (tuplas) para almacenamiento persistente.
+- **Método get_lock_stats()**: Corregido uso de `_is_owned()` en lugar de `locked()` para RLock.
+
 ### 🔧 Mejorado
 - **Sistema de Errores Contextuales**
   - Clases de error mejoradas con información detallada

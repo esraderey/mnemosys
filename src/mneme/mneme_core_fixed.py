@@ -5,7 +5,7 @@ aceleración de hardware y optimizaciones de rendimiento - SIN VULNERABILIDADES 
 
 Versión: 2.0.0
 Autor: MNEME Development Team
-Licencia: MIT
+Licencia: BSL 1.1
 """
 
 # === IMPORTS ESTÁNDAR ===
@@ -593,7 +593,7 @@ class GranularLockManager:
             current_time = time.time()
             
             # Calcular locks activos
-            active_locks = sum(1 for lock in self._locks.values() if lock.locked())
+            active_locks = sum(1 for lock in self._locks.values() if lock._is_owned())
             
             # Calcular uso promedio
             total_usage = sum(info['usage_count'] for info in self._lock_usage.values())
@@ -1428,7 +1428,7 @@ class ZDescriptor:
         return {
             'kind': self.kind,
             'decomp_type': self.decomp_type.value,
-            'shape': self.shape,
+            'shape': list(self.shape) if self.shape else [],
             'ranks': self.ranks,
             'core_data': base64.b64encode(self.core_data).decode(),
             'version': self.version,
@@ -1461,6 +1461,10 @@ class ZDescriptor:
             processed_data['decomp_type'] = DecompType(processed_data['decomp_type'])
         if 'compression_level' in processed_data:
             processed_data['compression_level'] = CompressionLevel(processed_data['compression_level'])
+        
+        # Convertir shape de vuelta a tupla
+        if 'shape' in processed_data and isinstance(processed_data['shape'], list):
+            processed_data['shape'] = tuple(processed_data['shape'])
         
         return cls(**processed_data)
 
@@ -1677,6 +1681,8 @@ class ZSpace:
             "write_operations": 0,
             "cache_hits": 0,
             "cache_misses": 0,
+            "storage_loads": 0,
+            "storage_stores": 0,
             "compression_ratio": 0.0,
             "total_storage_bytes": 0,
             "tensor_count": 0,
@@ -1851,18 +1857,32 @@ class ZSpace:
         
         # Usar lock granular para lectura
         with self.lock_manager.acquire_lock(name, LockType.READ):
-            if name not in self.name_to_desc:
-                raise KeyError(f"Unknown tensor: {name}")
-            
-            # Intentar obtener desde cache adaptativo
+            # Intentar obtener desde cache adaptativo primero
             cached_desc = self.adaptive_cache.get(f"desc_{name}")
             if cached_desc:
                 desc = cached_desc
                 self.storage_metrics["cache_hits"] += 1
-            else:
+            elif name in self.name_to_desc:
+                # Obtener desde memoria
                 desc = self.name_to_desc[name]
                 self.adaptive_cache.put(f"desc_{name}", desc)
                 self.storage_metrics["cache_misses"] += 1
+            else:
+                # Intentar cargar desde storage backend persistente
+                try:
+                    desc = self._load_from_storage(name)
+                    if desc:
+                        # Restaurar en memoria y cache
+                        self.name_to_desc[name] = desc
+                        self.addr_to_desc[ZAddr.compute(desc).addr] = desc
+                        self.adaptive_cache.put(f"desc_{name}", desc)
+                        self.storage_metrics["storage_loads"] += 1
+                        logger.info(f"Loaded '{name}' from persistent storage")
+                    else:
+                        raise KeyError(f"Unknown tensor: {name}")
+                except Exception as e:
+                    logger.error(f"Failed to load '{name}' from storage: {e}")
+                    raise KeyError(f"Unknown tensor: {name}")
             
             # Actualizar estadísticas de acceso del descriptor
             desc.update_access()
@@ -1956,16 +1976,214 @@ class ZSpace:
             raise
     
     def _register_descriptor(self, name: str, desc: ZDescriptor, old_addr: Optional[ZAddr]) -> ZAddr:
-        """Registrar descriptor en las tablas"""
+        """Registrar descriptor en las tablas y almacenamiento persistente"""
         addr = ZAddr.compute(desc)
         
+        # Almacenar en memoria (tablas locales)
         self.name_to_desc[name] = desc
         self.addr_to_desc[addr.addr] = desc
         
         if old_addr:
             self.version_graph[addr.addr] = old_addr.addr
         
+        # Almacenar en storage backend persistente
+        try:
+            # Serializar descriptor para almacenamiento
+            desc_data = desc.to_dict()
+            desc_bytes = json.dumps(desc_data).encode('utf-8')
+            
+            # Almacenar descriptor en storage backend
+            self.storage_backend.store(
+                key=f"desc_{name}",
+                data=desc_bytes,
+                metadata={
+                    'tensor_name': name,
+                    'addr': str(addr.addr),
+                    'created_at': desc.created_at if isinstance(desc.created_at, str) else str(desc.created_at),
+                    'size_bytes': desc.get_size_bytes(),
+                    'decomp_type': desc.decomp_type.value
+                }
+            )
+            
+            # Si hay lazy tensor, almacenar también los datos comprimidos
+            if hasattr(desc, 'lazy_tensor') and desc.lazy_tensor:
+                compressed_data = desc.lazy_tensor.compressed_data
+                if compressed_data:
+                    self.storage_backend.store(
+                        key=f"data_{name}",
+                        data=compressed_data,
+                        metadata={
+                            'tensor_name': name,
+                            'addr': str(addr.addr),
+                            'compression_type': 'lz4',
+                            'original_size': getattr(desc.lazy_tensor, 'original_size', len(compressed_data)),
+                            'compressed_size': len(compressed_data)
+                        }
+                    )
+            
+            logger.debug(f"Stored descriptor and data for '{name}' in persistent storage")
+            self.storage_metrics["storage_stores"] += 1
+            
+        except Exception as e:
+            logger.error(f"Failed to store '{name}' in persistent storage: {e}")
+            # No fallar la operación, pero registrar el error
+            # El tensor seguirá funcionando en memoria
+        
         return addr
+    
+    def _load_from_storage(self, name: str) -> Optional[ZDescriptor]:
+        """Cargar descriptor desde storage backend persistente"""
+        try:
+            # Cargar descriptor desde storage
+            desc_data = self.storage_backend.retrieve(f"desc_{name}")
+            if not desc_data:
+                return None
+            
+            # Reconstruir descriptor desde datos serializados
+            desc_dict = json.loads(desc_data.decode('utf-8'))
+            desc = ZDescriptor.from_dict(desc_dict)
+            
+            # Cargar datos comprimidos si existen
+            compressed_data = self.storage_backend.retrieve(f"data_{name}")
+            if compressed_data and hasattr(desc, 'lazy_tensor'):
+                # Reconstruir LazyTensor con datos comprimidos
+                # Crear función de decompresión
+                def decompression_func(data):
+                    return self._decompress_tensor(data)
+                
+                desc.lazy_tensor = LazyTensor(
+                    compressed_data=compressed_data,
+                    decompression_func=decompression_func,
+                    metadata={'shape': desc.shape, 'dtype': 'torch.float32'},
+                    device=self.device,
+                    max_memory_mb=getattr(self.config, 'lazy_tensor_memory_limit', 1024)  # 1GB por defecto
+                )
+            
+            return desc
+            
+        except Exception as e:
+            logger.error(f"Failed to load descriptor for '{name}' from storage: {e}")
+            return None
+    
+    def list_tensors(self) -> Dict[str, Any]:
+        """Listar todos los tensores disponibles (memoria + storage)"""
+        memory_tensors = set(self.name_to_desc.keys())
+        
+        # Obtener tensores desde storage backend
+        storage_tensors = set()
+        try:
+            storage_keys = self.storage_backend.list_keys()
+            for key in storage_keys:
+                if key.startswith("desc_"):
+                    tensor_name = key[5:]  # Remove "desc_" prefix
+                    storage_tensors.add(tensor_name)
+        except Exception as e:
+            logger.warning(f"Failed to list storage tensors: {e}")
+        
+        # Combinar y categorizar
+        all_tensors = memory_tensors.union(storage_tensors)
+        
+        result = {
+            "total_tensors": len(all_tensors),
+            "memory_tensors": list(memory_tensors),
+            "storage_tensors": list(storage_tensors),
+            "memory_only": list(memory_tensors - storage_tensors),
+            "storage_only": list(storage_tensors - memory_tensors),
+            "both": list(memory_tensors.intersection(storage_tensors))
+        }
+        
+        return result
+    
+    def delete_tensor(self, name: str) -> bool:
+        """Eliminar tensor de memoria y storage"""
+        success = True
+        
+        # Eliminar de memoria
+        if name in self.name_to_desc:
+            desc = self.name_to_desc[name]
+            addr = ZAddr.compute(desc)
+            
+            # Eliminar de tablas
+            del self.name_to_desc[name]
+            if addr.addr in self.addr_to_desc:
+                del self.addr_to_desc[addr.addr]
+            
+            # Eliminar de cache
+            self.adaptive_cache.remove(f"desc_{name}")
+            
+            # Limpiar lazy tensor si existe
+            if hasattr(desc, 'lazy_tensor') and desc.lazy_tensor:
+                desc.lazy_tensor.clear_decompressed()
+        
+        # Eliminar de storage
+        try:
+            self.storage_backend.delete(f"desc_{name}")
+            self.storage_backend.delete(f"data_{name}")
+            logger.info(f"Deleted tensor '{name}' from storage")
+        except Exception as e:
+            logger.error(f"Failed to delete '{name}' from storage: {e}")
+            success = False
+        
+        return success
+    
+    def sync_to_storage(self) -> Dict[str, Any]:
+        """Sincronizar todos los tensores en memoria con storage persistente"""
+        sync_results = {
+            "total_tensors": len(self.name_to_desc),
+            "successful_syncs": 0,
+            "failed_syncs": 0,
+            "errors": []
+        }
+        
+        for name, desc in self.name_to_desc.items():
+            try:
+                # Verificar si ya existe en storage
+                existing_desc = self.storage_backend.retrieve(f"desc_{name}")
+                if not existing_desc:
+                    # No existe en storage, sincronizar
+                    addr = ZAddr.compute(desc)
+                    
+                    # Almacenar descriptor
+                    desc_data = desc.to_dict()
+                    desc_bytes = json.dumps(desc_data).encode('utf-8')
+                    self.storage_backend.store(
+                        key=f"desc_{name}",
+                        data=desc_bytes,
+                        metadata={
+                            'tensor_name': name,
+                            'addr': str(addr.addr),
+                            'created_at': desc.created_at if isinstance(desc.created_at, str) else str(desc.created_at),
+                            'size_bytes': desc.get_size_bytes(),
+                            'decomp_type': desc.decomp_type.value
+                        }
+                    )
+                    
+                    # Almacenar datos comprimidos si existen
+                    if hasattr(desc, 'lazy_tensor') and desc.lazy_tensor:
+                        compressed_data = desc.lazy_tensor.compressed_data
+                        if compressed_data:
+                            self.storage_backend.store(
+                                key=f"data_{name}",
+                                data=compressed_data,
+                                metadata={
+                                    'tensor_name': name,
+                                    'addr': str(addr.addr),
+                                    'compression_type': 'lz4',
+                                    'original_size': getattr(desc.lazy_tensor, 'original_size', len(compressed_data)),
+                                    'compressed_size': len(compressed_data)
+                                }
+                            )
+                    
+                    sync_results["successful_syncs"] += 1
+                    logger.debug(f"Synced '{name}' to storage")
+                
+            except Exception as e:
+                sync_results["failed_syncs"] += 1
+                sync_results["errors"].append(f"Failed to sync '{name}': {e}")
+                logger.error(f"Failed to sync '{name}' to storage: {e}")
+        
+        logger.info(f"Storage sync completed: {sync_results['successful_syncs']} successful, {sync_results['failed_syncs']} failed")
+        return sync_results
     
     def get_stats(self) -> Dict[str, Any]:
         """Obtener estadísticas del sistema"""

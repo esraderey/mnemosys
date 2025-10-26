@@ -8,6 +8,8 @@ import hmac
 import secrets
 import time
 import logging
+import tempfile
+import os
 from typing import Any, Dict, Optional, Union, List, Tuple
 from dataclasses import dataclass
 from enum import Enum
@@ -160,9 +162,20 @@ class SecureSerializer:
                 raise ValueError("Metadata validation failed")
             
             # Usar safetensors para serialización segura
-            buffer = io.BytesIO()
-            save_file({"tensor": tensor}, buffer)
-            tensor_data = buffer.getvalue()
+            # SafeTensors necesita un archivo temporal para serializar
+            temp_file = tempfile.NamedTemporaryFile(delete=False)
+            temp_file.close()  # Cerrar el archivo para que SafeTensors pueda usarlo
+            
+            try:
+                save_file({"tensor": tensor}, temp_file.name)
+                with open(temp_file.name, 'rb') as f:
+                    tensor_data = f.read()
+            finally:
+                # Asegurar que el archivo se elimine
+                try:
+                    os.unlink(temp_file.name)
+                except:
+                    pass
             
             # Agregar metadatos si es necesario
             if metadata:
@@ -197,8 +210,23 @@ class SecureSerializer:
                 metadata = {}
             
             # Deserializar con safetensors
-            buffer = io.BytesIO(tensor_data)
-            loaded_data = load_file(buffer)
+            # SafeTensors necesita un archivo temporal para deserializar
+            temp_file = tempfile.NamedTemporaryFile(delete=False)
+            temp_file.close()
+            
+            try:
+                with open(temp_file.name, 'wb') as f:
+                    f.write(tensor_data)
+                # Convertir device a string si es necesario
+                device_str = str(device) if device else "cpu"
+                if device_str == "cpu":
+                    device_str = None  # SafeTensors usa None para CPU
+                loaded_data = load_file(temp_file.name, device=device_str)
+            finally:
+                try:
+                    os.unlink(temp_file.name)
+                except:
+                    pass
             
             if "tensor" not in loaded_data:
                 raise ValueError("No tensor found in serialized data")

@@ -347,6 +347,16 @@ class SecureStorageBackend:
             logger.error(f"Stats retrieval failed: {e}")
             return {}
     
+    def list_keys(self) -> List[str]:
+        """Listar todas las claves almacenadas"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.execute("SELECT key FROM storage_metadata")
+                return [row[0] for row in cursor.fetchall()]
+        except Exception as e:
+            logger.error(f"Failed to list keys: {e}")
+            return []
+    
     def cleanup(self):
         """Limpiar recursos"""
         try:
