@@ -12,7 +12,7 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: 🐍 Setup Python
       uses: actions/setup-python@v4
@@ -56,7 +56,7 @@ jobs:
   dependency-scan:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: 🐍 Setup Python
       uses: actions/setup-python@v4
@@ -84,7 +84,7 @@ jobs:
   code-quality:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: 🐍 Setup Python
       uses: actions/setup-python@v4
@@ -120,7 +120,7 @@ jobs:
   security-testing:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: 🐍 Setup Python
       uses: actions/setup-python@v4
@@ -191,7 +191,7 @@ jobs:
   compliance:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: 🐍 Setup Python
       uses: actions/setup-python@v4
