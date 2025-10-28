@@ -159,7 +159,7 @@ class SecureStorageBackend:
         """Descomprimir datos de forma segura"""
         try:
             return lz4.frame.decompress(data)
-        except:
+        except Exception:
             # Si falla la descompresión, asumir que no está comprimido
             return data
     
