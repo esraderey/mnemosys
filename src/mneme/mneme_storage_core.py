@@ -22,7 +22,7 @@ import sqlite3
 import tempfile
 import shutil
 import weakref
-from threading import Lock, RLock
+from threading import Lock
 from collections import deque, OrderedDict
 import safetensors
 from safetensors.torch import save_file, load_file
@@ -159,7 +159,7 @@ class SecureStorageBackend:
         """Descomprimir datos de forma segura"""
         try:
             return lz4.frame.decompress(data)
-        except:
+        except Exception:
             # Si falla la descompresión, asumir que no está comprimido
             return data
     

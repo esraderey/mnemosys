@@ -386,7 +386,7 @@ class TestMNEMESecurity(unittest.TestCase):
     
     def test_security_status(self):
         """Probar estado de seguridad"""
-        security_manager = SecurityManager(security_level=SecurityLevel.STANDARD)
+        security_manager = SecurityManager(level=SecurityLevel.STANDARD)
         
         status = security_manager.get_security_status()
         
