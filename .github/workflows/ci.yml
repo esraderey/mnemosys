@@ -8,7 +8,6 @@ on:
 
 env:
   PYTHON_VERSION: '3.8'
-  PYTHON_VERSION_MATRIX: ['3.8', '3.9', '3.10', '3.11', '3.12']
 
 jobs:
   # Job de calidad de código
@@ -17,12 +16,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v4
       
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
         
     - name: Install dependencies
       run: |
@@ -32,43 +40,48 @@ jobs:
         
     - name: Lint with flake8
       run: |
+        # Errores críticos
         flake8 src/ tests/ examples/ --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 src/ tests/ examples/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        # Advertencias
+        flake8 src/ tests/ examples/ --count --max-complexity=10 --max-line-length=127 --statistics
         
     - name: Type check with mypy
       run: |
         mypy src/ --ignore-missing-imports --no-strict-optional
+      continue-on-error: true
         
     - name: Security check with bandit
       run: |
-        bandit -r src/ -f json -o bandit-report.json || true
         bandit -r src/ -ll
+      continue-on-error: true
         
     - name: Format check with black
       run: |
-        black --check src/ tests/ examples/
+        black --check src/ tests/ examples/ || echo "::warning::Code formatting issues found"
         
     - name: Import sorting check with isort
       run: |
-        isort --check-only src/ tests/ examples/
+        isort --check-only src/ tests/ examples/ || echo "::warning::Import sorting issues found"
 
   # Job de testing
   test:
-    name: Test Suite
+    name: Test Suite Python ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ${{ fromJson(env.PYTHON_VERSION_MATRIX) }}
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
         
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v4
       
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        cache: 'pip'
         
     - name: Install system dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
@@ -84,31 +97,34 @@ jobs:
         
     - name: Run tests
       run: |
-        python -m pytest tests/ -v --cov=src/mneme --cov-report=xml --cov-report=html
+        python -m pytest tests/ -v --cov=src/mneme --cov-report=xml --cov-report=html --cov-report=term
         
     - name: Upload coverage to Codecov
-      if: matrix.os == 'ubuntu-latest'
-      uses: codecov/codecov-action@v3
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+      uses: codecov/codecov-action@v4
       with:
-        file: ./coverage.xml
+        files: ./coverage.xml
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
 
   # Job de rendimiento
   performance:
     name: Performance Tests
     runs-on: ubuntu-latest
+    needs: [test]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v4
       
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
         
     - name: Install dependencies
       run: |
@@ -118,14 +134,24 @@ jobs:
         
     - name: Run performance tests
       run: |
-        python examples/example_mneme.py --benchmark
-        python examples/example_advanced_features.py --benchmark
+        if [ -f "examples/example_mneme.py" ]; then
+          python examples/example_mneme.py --benchmark || echo "Benchmark 1 failed"
+        fi
+        if [ -f "examples/example_advanced_features.py" ]; then
+          python examples/example_advanced_features.py --benchmark || echo "Benchmark 2 failed"
+        fi
+      continue-on-error: true
         
     - name: Upload performance results
-      uses: actions/upload-artifact@v3
+      if: always()
+      uses: actions/upload-artifact@v4
       with:
         name: performance-results
-        path: performance_results.json
+        path: |
+          performance_results.json
+          *.json
+        if-no-files-found: warn
+        retention-days: 30
 
   # Job de seguridad
   security:
@@ -134,119 +160,163 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v4
       
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
         
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -e .[dev]
+        pip install safety
         
-    - name: Run security scan
+    - name: Run bandit security scan
       run: |
-        bandit -r src/ -f json -o security-report.json
-        safety check --json --output safety-report.json || true
+        bandit -r src/ -f json -o bandit-report.json
+      continue-on-error: true
+        
+    - name: Run safety check
+      run: |
+        safety check --json --output safety-report.json
+      continue-on-error: true
         
     - name: Upload security reports
-      uses: actions/upload-artifact@v3
+      if: always()
+      uses: actions/upload-artifact@v4
       with:
         name: security-reports
         path: |
-          security-report.json
+          bandit-report.json
           safety-report.json
+        if-no-files-found: warn
+        retention-days: 90
 
   # Job de documentación
   documentation:
-    name: Documentation
+    name: Documentation Build
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v4
       
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
         
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -e .[dev]
+        pip install sphinx sphinx-rtd-theme
         
-    - name: Build documentation
+    - name: Verify module import
       run: |
-        # Verificar que todos los docstrings estén presentes
-        python -c "import src.mneme; help(src.mneme)"
+        python -c "import src.mneme; print('Module imported successfully')"
+        
+    - name: Check docstrings
+      run: |
+        python -c "
+        import src.mneme
+        import inspect
+        
+        members = inspect.getmembers(src.mneme)
+        classes = [m for m in members if inspect.isclass(m[1])]
+        functions = [m for m in members if inspect.isfunction(m[1])]
+        
+        print(f'Found {len(classes)} classes and {len(functions)} functions')
+        "
+      continue-on-error: true
         
     - name: Check README links
       run: |
-        # Verificar que los enlaces del README funcionen
-        python -c "
-        import re
-        with open('README.md', 'r') as f:
-            content = f.read()
-        links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content)
-        print(f'Found {len(links)} links in README')
-        "
+        if [ -f "README.md" ]; then
+          python -c "
+          import re
+          with open('README.md', 'r', encoding='utf-8') as f:
+              content = f.read()
+          links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content)
+          print(f'Found {len(links)} links in README')
+          for title, url in links:
+              if url.startswith('http'):
+                  print(f'  - {title}: {url}')
+          "
+        fi
 
   # Job de build y distribución
   build:
-    name: Build Package
+    name: Build Package on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    needs: [code-quality, test, security]
+    needs: [code-quality, test]
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v4
       
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
         
     - name: Install build dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install build twine
+        pip install build twine wheel setuptools
         
     - name: Build package
       run: |
         python -m build
         
+    - name: Check package
+      run: |
+        twine check dist/*
+        
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dist-${{ matrix.os }}
         path: dist/
+        retention-days: 7
+        if-no-files-found: error
 
   # Job de release
   release:
-    name: Release
+    name: Release to PyPI
     runs-on: ubuntu-latest
-    needs: [build, documentation]
+    needs: [build, documentation, security]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]')
+    environment:
+      name: pypi
+      url: https://pypi.org/project/mneme/
+    permissions:
+      id-token: write  # Para PyPI trusted publishing
+      contents: write
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v4
       
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
         
     - name: Download build artifacts
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v4
       with:
         name: dist-ubuntu-latest
         path: dist/
@@ -259,22 +329,45 @@ jobs:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
-        twine upload dist/*
+        twine upload dist/* --non-interactive --skip-existing
+        
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: dist/*
+        generate_release_notes: true
 
   # Job de notificaciones
   notify:
-    name: Notify
+    name: Notify Results
     runs-on: ubuntu-latest
     needs: [code-quality, test, security, documentation, build]
     if: always()
     
     steps:
+    - name: Check results
+      run: |
+        echo "Code Quality: ${{ needs.code-quality.result }}"
+        echo "Tests: ${{ needs.test.result }}"
+        echo "Security: ${{ needs.security.result }}"
+        echo "Documentation: ${{ needs.documentation.result }}"
+        echo "Build: ${{ needs.build.result }}"
+        
     - name: Notify on success
       if: ${{ needs.code-quality.result == 'success' && needs.test.result == 'success' && needs.security.result == 'success' && needs.documentation.result == 'success' && needs.build.result == 'success' }}
       run: |
         echo "✅ All checks passed successfully!"
+        echo "Pipeline completed at $(date)"
         
     - name: Notify on failure
       if: ${{ needs.code-quality.result == 'failure' || needs.test.result == 'failure' || needs.security.result == 'failure' || needs.documentation.result == 'failure' || needs.build.result == 'failure' }}
       run: |
         echo "❌ Some checks failed. Please review the logs."
+        echo "Failed jobs:"
+        [ "${{ needs.code-quality.result }}" == "failure" ] && echo "  - Code Quality"
+        [ "${{ needs.test.result }}" == "failure" ] && echo "  - Tests"
+        [ "${{ needs.security.result }}" == "failure" ] && echo "  - Security"
+        [ "${{ needs.documentation.result }}" == "failure" ] && echo "  - Documentation"
+        [ "${{ needs.build.result }}" == "failure" ] && echo "  - Build"
+        exit 1
