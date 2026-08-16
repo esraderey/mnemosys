@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mneme"
+name = "mnemosys"
 version = "2.0.1"
-description = "Motor de Memoria Neural Mórfica - Sistema avanzado de memoria computacional con síntesis determinista, verificación criptográfica robusta, aceleración de hardware y optimizaciones de rendimiento"
+description = "MNEMOSYS (Memoria Neural Estructurada Mórfica con Orquestación de Síntesis Y Seguridad) - Motor de memoria computacional con síntesis determinista, compresión tensorial real, cifrado en reposo e inferencia con pesos comprimidos. El paquete Python conserva el import histórico: import mneme"
 readme = "README.md"
 license = {text = "BUSL-1.1"}
 authors = [
@@ -26,8 +26,6 @@ classifiers = [
     "License :: Other/Proprietary License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -36,7 +34,10 @@ classifiers = [
     "Topic :: System :: Distributed Computing",
     "Topic :: Security :: Cryptography",
 ]
-requires-python = ">=3.8"
+# >=3.10: el código ya exigía 3.9 de facto (str.removeprefix en el camino de
+# decuantización) y 3.10 es el suelo en el que las anotaciones PEP 585/604
+# (dict[...] / X | None) son válidas también en posiciones evaluadas en runtime.
+requires-python = ">=3.10"
 dependencies = [
     "torch>=2.0.0",
     "numpy>=1.21.0",
@@ -47,6 +48,7 @@ dependencies = [
     "psutil>=5.8.0",
     "xxhash>=3.0.0",
     "msgpack>=1.0.0",
+    "mscs>=2.4.0",
 ]
 
 [project.optional-dependencies]
@@ -90,9 +92,6 @@ Issues = "https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/i
 Discussions = "https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/discussions"
 Changelog = "https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/blob/main/CHANGELOG.md"
 
-[project.scripts]
-mneme = "mneme.cli:main"
-
 [tool.setuptools.packages.find]
 where = ["src"]
 
@@ -101,7 +100,7 @@ mneme = ["*.py", "*.yaml", "*.yml", "*.json"]
 
 [tool.black]
 line-length = 127
-target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+target-version = ['py310', 'py311', 'py312']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -128,7 +127,7 @@ ensure_newline_before_comments = true
 known_first_party = ["mneme"]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
@@ -208,8 +207,10 @@ exclude_dirs = ["tests", "examples"]
 skips = ["B101", "B601"]
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py310"
 line-length = 127
+
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -223,7 +224,8 @@ ignore = [
     "E501",  # line too long, handled by black
     "B008",  # do not perform function calls in argument defaults
     "C901",  # too complex
+    "UP038", # isinstance(X | Y) es más lento en runtime que la tupla y la regla está deprecada aguas arriba
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]

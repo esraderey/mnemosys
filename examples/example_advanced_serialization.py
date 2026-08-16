@@ -1,279 +1,214 @@
 #!/usr/bin/env python3
 """
-Ejemplo de uso de la serialización avanzada en MNEME
-Demuestra las nuevas funcionalidades de seguridad y múltiples formatos.
+Ejemplo de serialización avanzada en MNEME.
+
+La serialización es única y segura (safetensors + LZ4, sin pickle); lo que se
+elige por tensor es la ruta del descriptor (RAW, SVD, INT8 por grupos) y las
+protecciones (firma HMAC del marco MNEM, cifrado en reposo con secret_key).
+Este ejemplo recorre esas opciones con la API vigente.
 """
 
-import torch
-import numpy as np
 import time
-from mneme_core import (
-    MnemeConfig, 
-    ZSpace, 
-    SerializationFormat, 
+
+import torch
+
+from mneme import (
+    DecompType,
+    MnemeConfig,
+    SecureSerializer,
+    SecurityConfig,
     SecurityLevel,
-    CompressionLevel
+    ValidationError,
+    ZSpace,
 )
 
-def demo_serialization_formats():
-    """Demostrar diferentes formatos de serialización."""
-    print("=== Demostración de Formatos de Serialización ===")
-    
-    # Crear datos de prueba
-    tensor_data = torch.randn(100, 50)
-    simple_data = {"numbers": [1, 2, 3, 4, 5], "text": "Hello MNEME"}
-    mixed_data = {
-        "tensor": tensor_data,
-        "metadata": simple_data,
-        "numpy_array": np.random.rand(10, 10)
-    }
-    
-    formats = [
-        SerializationFormat.TORCH,
-        SerializationFormat.MSGPACK,
-        SerializationFormat.JSON,
-        SerializationFormat.HYBRID
+SECRET_KEY = b"clave_de_ejemplo_de_32_bytes____"
+
+
+def demo_descriptor_formats():
+    """Comparar las rutas de serialización que elige el routing inteligente.
+
+    RAW y QUANTIZED no se fuerzan con decomp_type: RAW lo decide el routing
+    por forma/tamaño y la cuantización se pide con quantization_type.
+    """
+    print("=== Formatos de descriptor (routing RAW / SVD / TT / INT8) ===")
+
+    variants = [
+        ("RAW (2-D pequeño -> safetensors + LZ4, sin pérdida)", "fmt_raw",
+         torch.randn(96, 96), {}),
+        ("SVD (2-D grande, target_ratio=0.1)", "fmt_svd",
+         torch.randn(512, 512), {"decomp_type": DecompType.SVD, "target_ratio": 0.1}),
+        ("TT (3-D -> Tensor-Train)", "fmt_tt",
+         torch.randn(32, 32, 32), {"target_ratio": 0.1}),
+        ("INT8 por grupos (group_size=128)", "fmt_int8",
+         torch.randn(512, 512), {"quantization_type": "int8", "group_size": 128}),
     ]
-    
-    for format_type in formats:
-        print(f"\n--- Formato: {format_type.value} ---")
-        
-        # Configurar MNEME con formato específico
-        config = MnemeConfig(
-            serialization_format=format_type,
-            security_level=SecurityLevel.NONE,  # Sin seguridad para comparar tamaños
-            enable_compression=False,
-            enable_validation=False
-        )
-        
-        with ZSpace(config) as mneme:
-            # Medir tiempo de serialización
-            start_time = time.time()
-            desc = mneme.register("test_data", mixed_data)
-            serialization_time = time.time() - start_time
-            
-            # Medir tiempo de deserialización
-            start_time = time.time()
-            loaded_data = mneme.load("test_data")
-            deserialization_time = time.time() - start_time
-            
-            print(f"Tiempo de serialización: {serialization_time:.4f}s")
-            print(f"Tiempo de deserialización: {deserialization_time:.4f}s")
-            print(f"Tamaño comprimido: {len(desc.core_data)} bytes")
-            print(f"Ratio de compresión: {desc.meta.get('compression_ratio', 'N/A')}")
+
+    with ZSpace() as mneme:
+        for label, name, tensor, kwargs in variants:
+            original_bytes = tensor.numel() * tensor.element_size()
+
+            start = time.time()
+            desc = mneme.register(name, tensor, **kwargs)
+            register_time = time.time() - start
+
+            start = time.time()
+            loaded = mneme.load(name).cpu()
+            load_time = time.time() - start
+
+            error = torch.norm(tensor - loaded) / torch.norm(tensor)
+            print(f"\n--- {label} ---")
+            print(f"Forma: {tuple(tensor.shape)}, "
+                  f"original: {original_bytes / 1024:.1f}KB")
+            print(f"Tipo de descriptor: {desc.decomp_type.value}")
+            print(f"Tamaño serializado: {len(desc.core_data)} bytes "
+                  f"({len(desc.core_data) / original_bytes:.1%} del original)")
+            print(f"Error de reconstrucción: {error:.6f}")
+            print(f"Registro: {register_time * 1000:.1f}ms, "
+                  f"carga: {load_time * 1000:.1f}ms")
+
 
 def demo_security_levels():
-    """Demostrar diferentes niveles de seguridad."""
-    print("\n=== Demostración de Niveles de Seguridad ===")
-    
-    # Datos sensibles de prueba
-    sensitive_data = {
-        "model_weights": torch.randn(1000, 1000),
-        "api_keys": ["secret_key_1", "secret_key_2"],
-        "user_data": {"id": 12345, "name": "Usuario Test"}
-    }
-    
-    security_levels = [
-        (SecurityLevel.NONE, "Sin seguridad"),
-        (SecurityLevel.HMAC, "Firma HMAC"),
-        (SecurityLevel.ENCRYPTED, "Cifrado completo")
-    ]
-    
-    for security_level, description in security_levels:
-        print(f"\n--- {description} ---")
-        
-        config = MnemeConfig(
-            serialization_format=SerializationFormat.HYBRID,
-            security_level=security_level,
-            secret_key=b"test_secret_key_32_bytes_long_12345" if security_level != SecurityLevel.NONE else None,
-            enable_encryption=(security_level == SecurityLevel.ENCRYPTED),
-            encryption_password="test_password_123" if security_level == SecurityLevel.ENCRYPTED else None,
-            enable_compression=True,
-            enable_validation=True
-        )
-        
-        with ZSpace(config) as mneme:
-            # Medir tiempo de serialización con seguridad
-            start_time = time.time()
-            desc = mneme.register("sensitive_data", sensitive_data)
-            serialization_time = time.time() - start_time
-            
-            # Medir tiempo de deserialización
-            start_time = time.time()
-            loaded_data = mneme.load("sensitive_data")
-            deserialization_time = time.time() - start_time
-            
-            print(f"Tiempo de serialización: {serialization_time:.4f}s")
-            print(f"Tiempo de deserialización: {deserialization_time:.4f}s")
-            print(f"Tamaño final: {len(desc.core_data)} bytes")
-            
-            # Verificar integridad
-            if desc.verify_integrity():
-                print("✓ Verificación de integridad: EXITOSA")
-            else:
-                print("✗ Verificación de integridad: FALLÓ")
+    """Demostrar la firma HMAC del marco MNEM y el cifrado en reposo."""
+    print("\n=== Niveles de seguridad ===")
 
-def demo_compression_levels():
-    """Demostrar diferentes niveles de compresión."""
-    print("\n=== Demostración de Niveles de Compresión ===")
-    
-    # Datos con diferentes patrones de compresión
-    random_data = torch.randn(500, 500)  # Datos aleatorios (baja compresión)
-    sparse_data = torch.zeros(500, 500)  # Datos dispersos (alta compresión)
-    sparse_data[::10, ::10] = 1.0
-    
-    test_cases = [
-        ("Datos aleatorios", random_data),
-        ("Datos dispersos", sparse_data)
+    # 2-D pequeño: el routing lo serializa RAW y el roundtrip es exacto
+    sensitive = torch.randn(64, 64)
+
+    # 1) Serialización sin firma vs firmada (SecureSerializer, formato MNEM)
+    configurations = [
+        ("sin firma", SecurityConfig(
+            security_level=SecurityLevel.NONE,
+            require_signatures=False,
+        )),
+        ("firmado HMAC", SecurityConfig(
+            security_level=SecurityLevel.HMAC,
+            require_signatures=True,
+            signing_key=SECRET_KEY,
+        )),
     ]
-    
-    compression_levels = [
-        CompressionLevel.ULTRA_FAST,
-        CompressionLevel.BALANCED,
-        CompressionLevel.MAXIMUM
-    ]
-    
-    for data_name, data in test_cases:
-        print(f"\n--- {data_name} ---")
-        
-        for comp_level in compression_levels:
-            config = MnemeConfig(
-                serialization_format=SerializationFormat.TORCH,
-                compression_level=comp_level,
-                security_level=SecurityLevel.HMAC,
-                secret_key=b"test_secret_key_32_bytes_long_12345",
-                enable_compression=True
-            )
-            
-            with ZSpace(config) as mneme:
-                start_time = time.time()
-                desc = mneme.register(f"test_{comp_level.value}", data)
-                serialization_time = time.time() - start_time
-                
-                print(f"  {comp_level.value}: {len(desc.core_data)} bytes "
-                      f"(ratio: {desc.meta.get('compression_ratio', 'N/A'):.3f}, "
-                      f"tiempo: {serialization_time:.4f}s)")
+
+    for label, sec_config in configurations:
+        serializer = SecureSerializer(sec_config)
+
+        start = time.time()
+        blob = serializer.serialize_tensor(sensitive)
+        serialize_time = time.time() - start
+
+        restored, _metadata = serializer.deserialize_tensor(blob)
+        roundtrip_ok = torch.allclose(sensitive, restored)
+
+        print(f"\n--- {label} ---")
+        print(f"Tamaño: {len(blob)} bytes, tiempo: {serialize_time * 1000:.1f}ms")
+        print(f"Roundtrip íntegro: {'✓' if roundtrip_ok else '✗'}")
+
+    # 2) Cifrado en reposo dentro de ZSpace (secret_key lo habilita)
+    with ZSpace(MnemeConfig(secret_key=SECRET_KEY)) as mneme:
+        mneme.register("tensor_sensible", sensitive)
+        restored = mneme.load("tensor_sensible").cpu()
+        security_stats = mneme.get_stats()["security"]
+
+        print("\n--- cifrado en reposo (ZSpace + secret_key) ---")
+        print(f"Roundtrip cifrado: {'✓' if torch.allclose(sensitive, restored) else '✗'}")
+        print(f"Nivel de seguridad activo: {security_stats['config']['security_level']}")
+        print(f"Eventos de auditoría: {security_stats['audit_events']}")
+
+
+def demo_compression_behaviour():
+    """La compresión LZ4 del descriptor RAW depende de la compresibilidad."""
+    print("\n=== Compresión LZ4 según el contenido ===")
+
+    # Tensores 1-D: el routing los manda a RAW (safetensors + LZ4) y la
+    # diferencia de tamaño refleja solo la compresibilidad del contenido.
+    random_data = torch.randn(250_000)    # Ruido: apenas comprime
+    sparse_data = torch.zeros(250_000)    # Disperso: comprime muchísimo
+    sparse_data[::100] = 1.0
+
+    with ZSpace() as mneme:
+        for label, data in (("aleatorios", random_data), ("dispersos", sparse_data)):
+            desc = mneme.register(f"datos_{label}", data)
+            original_bytes = data.numel() * data.element_size()
+            print(f"Datos {label} ({desc.decomp_type.value}): "
+                  f"{original_bytes} -> {len(desc.core_data)} bytes "
+                  f"({len(desc.core_data) / original_bytes:.1%})")
+
 
 def demo_validation_features():
-    """Demostrar características de validación."""
-    print("\n=== Demostración de Validación ===")
-    
-    config = MnemeConfig(
-        serialization_format=SerializationFormat.HYBRID,
-        security_level=SecurityLevel.HMAC,
-        secret_key=b"test_secret_key_32_bytes_long_12345",
-        enable_validation=True,
-        enable_compression=True
-    )
-    
-    with ZSpace(config) as mneme:
-        # Datos de prueba con diferentes tipos
-        test_cases = [
-            ("tensor_simple", torch.randn(10, 10)),
-            ("tensor_complejo", torch.randn(100, 100, 3)),
-            ("datos_mixtos", {
-                "tensor": torch.randn(50, 50),
-                "lista": [1, 2, 3, 4, 5],
-                "dict": {"a": 1, "b": 2}
-            }),
-            ("numpy_data", np.random.rand(20, 20))
+    """Validación de entradas e integridad de descriptores."""
+    print("\n=== Validación ===")
+
+    with ZSpace() as mneme:
+        desc = mneme.register("tensor_valido", torch.randn(50, 50))
+        integrity_ok = desc.verify_integrity()
+        print(f"Registro válido: {desc.decomp_type.value}, "
+              f"integridad {'✓' if integrity_ok else '✗'}")
+
+        rejected_cases = [
+            ("dato no tensorial", "no_tensor", {"clave": "valor"}),
+            ("nombre vacío", "", torch.randn(4, 4)),
         ]
-        
-        for name, data in test_cases:
-            print(f"\n--- {name} ---")
-            
-            # Serializar
-            desc = mneme.register(name, data)
-            print(f"Tipo original: {type(data).__name__}")
-            print(f"Tamaño serializado: {len(desc.core_data)} bytes")
-            
-            # Deserializar y verificar
-            loaded_data = mneme.load(name)
-            print(f"Tipo cargado: {type(loaded_data).__name__}")
-            
-            # Verificar integridad del descriptor
-            if desc.verify_integrity():
-                print("✓ Integridad verificada")
-            else:
-                print("✗ Fallo en verificación de integridad")
+
+        for label, name, data in rejected_cases:
+            try:
+                mneme.register(name, data)
+                print(f"{label}: aceptado (inesperado)")
+            except ValidationError as exc:
+                print(f"{label}: rechazado ({type(exc).__name__})")
+
 
 def demo_performance_comparison():
-    """Comparar rendimiento entre diferentes configuraciones."""
-    print("\n=== Comparación de Rendimiento ===")
-    
-    # Datos de prueba grandes
-    large_tensor = torch.randn(1000, 1000)
-    
-    configurations = [
-        ("Básico (Torch)", MnemeConfig(
-            serialization_format=SerializationFormat.TORCH,
-            security_level=SecurityLevel.NONE,
-            enable_compression=False,
-            enable_validation=False
-        )),
-        ("Con compresión", MnemeConfig(
-            serialization_format=SerializationFormat.TORCH,
-            security_level=SecurityLevel.NONE,
-            enable_compression=True,
-            compression_level=CompressionLevel.BALANCED
-        )),
-        ("Con seguridad", MnemeConfig(
-            serialization_format=SerializationFormat.TORCH,
-            security_level=SecurityLevel.HMAC,
-            secret_key=b"test_secret_key_32_bytes_long_12345",
-            enable_compression=True
-        )),
-        ("Híbrido completo", MnemeConfig(
-            serialization_format=SerializationFormat.HYBRID,
-            security_level=SecurityLevel.HMAC,
-            secret_key=b"test_secret_key_32_bytes_long_12345",
-            enable_compression=True,
-            enable_validation=True
-        ))
+    """Comparar coste de las rutas de descriptor y del cifrado en reposo."""
+    print("\n=== Comparación de rendimiento ===")
+
+    # Todos los escenarios usan 1M de elementos (4MB): los 1-D rutean a RAW
+    # y los 2-D permiten SVD/INT8, así los tamaños son comparables.
+    scenarios = [
+        ("RAW 1-D", MnemeConfig(),
+         torch.randn(1_000_000), {}),
+        ("RAW 1-D + cifrado en reposo", MnemeConfig(secret_key=SECRET_KEY),
+         torch.randn(1_000_000), {}),
+        ("SVD 2-D (target_ratio=0.1)", MnemeConfig(),
+         torch.randn(1000, 1000), {"decomp_type": DecompType.SVD, "target_ratio": 0.1}),
+        ("INT8 por grupos 2-D", MnemeConfig(),
+         torch.randn(1000, 1000), {"quantization_type": "int8", "group_size": 128}),
     ]
-    
-    for config_name, config in configurations:
-        print(f"\n--- {config_name} ---")
-        
+
+    for label, config, tensor, kwargs in scenarios:
         with ZSpace(config) as mneme:
-            # Medir serialización
-            start_time = time.time()
-            desc = mneme.register("perf_test", large_tensor)
-            serialization_time = time.time() - start_time
-            
-            # Medir deserialización
-            start_time = time.time()
-            loaded_tensor = mneme.load("perf_test")
-            deserialization_time = time.time() - start_time
-            
-            # Verificar que los datos son correctos
-            data_correct = torch.allclose(large_tensor, loaded_tensor)
-            
-            print(f"Serialización: {serialization_time:.4f}s")
-            print(f"Deserialización: {deserialization_time:.4f}s")
-            print(f"Tamaño: {len(desc.core_data)} bytes")
-            print(f"Datos correctos: {'✓' if data_correct else '✗'}")
+            start = time.time()
+            desc = mneme.register("perf_test", tensor, **kwargs)
+            register_time = time.time() - start
+
+            start = time.time()
+            loaded = mneme.load("perf_test").cpu()
+            load_time = time.time() - start
+
+            error = torch.norm(tensor - loaded) / torch.norm(tensor)
+            print(f"\n--- {label} ({desc.decomp_type.value}) ---")
+            print(f"Registro: {register_time:.4f}s, carga: {load_time:.4f}s")
+            print(f"Tamaño: {len(desc.core_data)} bytes, error: {error:.6f}")
+
 
 if __name__ == "__main__":
     print("MNEME - Demostración de Serialización Avanzada")
     print("=" * 50)
-    
+
     try:
-        demo_serialization_formats()
+        demo_descriptor_formats()
         demo_security_levels()
-        demo_compression_levels()
+        demo_compression_behaviour()
         demo_validation_features()
         demo_performance_comparison()
-        
+
         print("\n" + "=" * 50)
         print("✓ Demostración completada exitosamente")
-        print("\nCaracterísticas implementadas:")
-        print("- Múltiples formatos de serialización (Torch, MessagePack, JSON, Híbrido)")
-        print("- Niveles de seguridad (HMAC, Cifrado)")
-        print("- Compresión LZ4 configurable")
-        print("- Validación de integridad y tipos")
-        print("- Reemplazo completo de pickle por métodos seguros")
-        
+        print("\nCaracterísticas demostradas:")
+        print("- Rutas de descriptor: RAW (sin pérdida), SVD, TT e INT8 por grupos")
+        print("- Firma HMAC del marco de serialización MNEM (sin pickle)")
+        print("- Cifrado en reposo activado por secret_key")
+        print("- Compresión LZ4 sensible a la compresibilidad del dato")
+        print("- Validación de entradas e integridad de descriptores")
+
     except Exception as e:
         print(f"\n✗ Error durante la demostración: {e}")
         import traceback

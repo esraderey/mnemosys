@@ -1,6 +1,6 @@
-# 🧠 MNEME v2.0.1 – Motor de Memoria Neural Mórfica
+# 🧠 MNEMOSYS – Motor de Memoria Neural Mórfica
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
 [![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL--1.1-blue.svg)](https://opensource.org/licenses/BUSL-1.1)
 [![Security](https://img.shields.io/badge/Security-Enterprise-green.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
@@ -9,8 +9,10 @@
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/actions)
 [![Code Quality](https://img.shields.io/badge/Code%20Quality-A+-green.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
 
-**MNEME v2.0.1** redefine la memoria computacional mediante un motor neural inspirado en estructuras biológicas con **arquitectura modular segura**, **locks granulares**, **safetensors**, **lazy decompression** y **cache adaptativo**.  
-En lugar de almacenar datos en ubicaciones fijas, **MNEME guarda descriptores compactos y generativos** que reconstruyen el contenido de forma determinista, como si fueran recuerdos que emergen bajo demanda.
+**MNEMOSYS** (antes MNEME) redefine la memoria computacional mediante un motor neural inspirado en estructuras biológicas con **arquitectura modular segura**, **locks granulares**, **safetensors**, **lazy decompression** y **cache adaptativo**.  
+En lugar de almacenar datos en ubicaciones fijas, **MNEMOSYS guarda descriptores compactos y generativos** que reconstruyen el contenido de forma determinista, como si fueran recuerdos que emergen bajo demanda.
+
+> El paquete Python conserva el import histórico — `import mneme` — como Mnemosyne conserva a sus musas: la distribución se llama `mnemosys`, el módulo se sigue llamando `mneme`.
 
 ## 🆕 Mejoras v2.0.1
 
@@ -119,13 +121,16 @@ En lugar de almacenar datos en ubicaciones fijas, **MNEME guarda descriptores co
 
 ## 📋 Nombre del Proyecto
 
-**MNEME**
+**MNEMOSYS** — heredero directo de MNEME, con el nombre de Mnemosyne, la titánide griega de la memoria y madre de las musas:
 
 - **M**emoria  
 - **N**eural  
 - **E**structurada  
-- **M**órfica  
-- **E**mergente  
+- **M**órfica con  
+- **O**rquestación de  
+- **S**íntesis  
+- **Y**  
+- **S**eguridad  
 
 ---
 
@@ -136,52 +141,46 @@ MNEME: **Descriptor → Síntesis → Recuerdo**
 
 ```python
 # Tradicional: Guardar tensor de 4MB en RAM
-memory[0x1000] = huge_tensor  
+memory[0x1000] = huge_tensor
 
-# MNEME: Guardar descriptor de 40KB con procesamiento paralelo
-descriptor = mneme.register_parallel("huge_tensor", huge_tensor)  
-tensor = mneme.load_parallel("huge_tensor")  # Reconstrucción optimizada
+# MNEME: Guardar un descriptor compacto que reconstruye el tensor bajo demanda
+descriptor = mneme.register("huge_tensor", huge_tensor, target_ratio=0.1)
+tensor = mneme.load("huge_tensor")  # Síntesis determinista
 ```
 
-## 🎯 ¿Por qué MNEME v2.0?
+## 🎯 ¿Por qué MNEME?
 
-🔹 **10–100x reducción de memoria** para modelos ML, imágenes y estados de simulación
+🔹 **Compresión real medida** – SVD al 20 % de bytes, INT8 al 27 % con 0.6 % de error; hasta 60× cuando el dato tiene estructura
 
-🔹 **Síntesis determinista** – mismo descriptor, mismo resultado garantizado
+🔹 **Síntesis determinista** – mismo descriptor, mismo resultado bit a bit, incluso entre reinicios (verificado 36/36 cross-instancia)
 
-🔹 **Procesamiento paralelo** – hasta 8x aceleración con múltiples cores
+🔹 **Turbo de inferencia** – `compress_model_turbo` ejecuta modelos con el peso comprimido residente: 20.5 % de VRAM, pico de forward ÷4.9, latencia a la par del denso
 
-🔹 **Seguridad cuántica** – resistente a ataques de computación cuántica
+🔹 **Thread-safe verificado** – locks granulares por tensor; 640 operaciones concurrentes en 8 hilos sin un solo incidente
 
-🔹 **Monitoreo en tiempo real** – métricas y alertas automáticas
+🔹 **Nada se corrompe en silencio** – flip de bytes, blobs truncados o clave equivocada mueren en `StorageAuthenticationError`; los controles cargan bit-idénticos
 
-🔹 **Almacenamiento inteligente** – migración automática entre niveles
+🔹 **Cifrado en reposo y firma HMAC reales** – activados por `secret_key`, con almacenamiento persistente SQLite + safetensors + LZ4
 
-🔹 **Optimización automática** – gestión inteligente de recursos
+🔹 **Sin pickle** – serialización exclusivamente segura
 
-🔹 **Verificación criptográfica** – autenticidad e integridad garantizadas
+## 📊 Métricas medidas (16-ago-2026, artefactos en `benchmarks/` y suite)
 
-## 📊 Métricas de Rendimiento v2.0.1
+Números de ejecuciones reales en esta máquina (CUDA), no estimaciones:
 
-| Métrica | Rendimiento v2.0 | Rendimiento v2.0.1 |
-|---------|------------------|-------------------|
-| Ratio de compresión | 10–20x en transformadores | **15–25x en transformadores** |
-| Latencia de síntesis | <150μs (tiles de 256KB) | **<100μs (tiles de 256KB)** |
-| Latencia de caché (CPU) | <1μs | **<0.5μs** |
-| Pérdida de calidad | <1% en inferencia ML | **<0.5% en inferencia ML** |
-| Ahorro de memoria VRAM | >90% con caché en CPU | **>95% con caché en CPU** |
-| **Aceleración paralela** | **8x con 8 cores** | **10x con 8 cores** |
-| **Eficiencia paralela** | **>80% en operaciones masivas** | **>90% en operaciones masivas** |
-| **Tiempo de cifrado** | **<100μs por tensor** | **<50μs por tensor** |
-| **Rotación de claves** | **<1ms automática** | **<0.5ms automática** |
-| **Métricas en tiempo real** | **<1ms latencia** | **<0.5ms latencia** |
-| **Gestión de memoria** | Optimizada | **50-70% reducción** |
-| **Locks granulares** | Mejor concurrencia | **95% eficiencia** |
-| **Cache adaptativo** | Hit rate >80% | **Hit rate >95%** |
-| **Validación de entrada** | Robusta | **<1μs por validación** |
-| **Storage persistente** | No funcional | **100% funcional** |
-| **Carga desde storage** | No disponible | **<10ms por tensor** |
-| **Sincronización memoria-storage** | No disponible | **Automática** |
+| Métrica | Valor medido |
+|---------|--------------|
+| Suite de tests | **134 passed / 0 failed** (~45 s) |
+| Turbo SVD 0.1 (8×Linear 2048²) | VRAM residente **20.5 %** del denso · pico forward **÷4.9** · latencia **a la par** |
+| Turbo INT8 | VRAM residente 26.6 % · latencia ×100+ (dequant CPU: solo si la VRAM es el cuello) |
+| INT8 por grupos (fidelidad) | 26.6 % de bytes, error relativo **0.6 %** |
+| SVD sobre dato estructurado | 20 % de bytes, error 10⁻⁶ (rango exacto) / 0.9 % (+1 % ruido) |
+| Sparsity 2:4 | patrón exacto tras roundtrip, 50.0 % ceros |
+| Rehidratación desde disco | 36/36 tensores **bit-idénticos** entre instancias (fp32 y fp64) |
+| Concurrencia (8 hilos, 640 ops) | 0 excepciones, 0 cross-talk, 0 desviaciones |
+| Corrupción/clave errónea | 3/3 detectadas (`StorageAuthenticationError`), 0 silenciosas |
+| Pythia-410M · WikiText-2 (PPL) | FP16 **15.07** · GPTQ INT4 **19.97** (+32 %) · INT4 naive **24.25** (+61 %) |
+| Register / load (1000×1000, SVD) | 57 ms / 6 ms (28 ms el load de 2000², cacheado ~×20 más rápido) |
 
 ## 🏗️ Arquitectura Modular Segura v2.0
 
@@ -193,7 +192,8 @@ src/mneme/
 ├── mneme_security_core.py       # Seguridad y validación
 ├── mneme_storage_core.py        # Almacenamiento seguro
 ├── mneme_torch.py               # Integración PyTorch
-└── mneme_optimization.py        # Optimizaciones
+├── mneme_lazy.py                # Turbo: inferencia con pesos comprimidos
+└── mneme_optimization.py        # Optimizaciones y cuantización
 ```
 
 ### 🔒 Características de Seguridad
@@ -214,24 +214,21 @@ MNEME---Motor-de-Memoria-Neural-M-rfica/
 │   ├── mneme_storage_core.py    # Almacenamiento seguro
 │   ├── mneme_torch.py           # Integración PyTorch
 │   └── mneme_optimization.py    # Optimizaciones
-├── examples/                     # Ejemplos de uso v2.0
-│   ├── example_mneme.py         # Ejemplo completo v2.0
-│   ├── example_advanced_features.py  # Nuevas funcionalidades
-│   ├── example_advanced_serialization.py
-│   ├── example_advanced_encryption.py
-│   ├── example_advanced_storage.py
-│   └── example_context_deduplication.py
+├── examples/                     # Ejemplos ejecutables contra la API real
+│   ├── example_mneme.py         # Recorrido completo (11 ejemplos)
+│   ├── example_advanced_features.py  # Locks, safetensors, lazy, cache
+│   └── example_advanced_serialization.py  # Rutas, HMAC, cifrado, LZ4
+├── benchmarks/                  # Benchmarks reales (Pythia-410M / WikiText-2)
+│   ├── bench_pythia_int4.py
+│   ├── bench_pythia_gptq.py
+│   └── results_pythia_*.json
 ├── docs/                        # Documentación
-│   ├── README.md               # Este archivo
-│   ├── SERIALIZATION_UPGRADE.md
-│   ├── ENCRYPTION_AND_CONTEXT_UPGRADE.md
-│   ├── ADVANCED_STORAGE_UPGRADE.md
-│   └── CONTEXT_DEDUPLICATION_UPGRADE.md
-├── tests/                       # Tests unitarios v2.0
-│   └── test_mneme.py
-├── scripts/                     # Scripts de utilidad
-├── requirements.txt             # Dependencias (incluye safetensors)
-├── setup.py                    # Configuración del paquete
+├── tests/                       # Suite (134 tests)
+│   ├── test_mneme.py
+│   ├── test_regresiones_auditoria.py
+│   └── test_turbo.py
+├── requirements.txt             # Dependencias
+├── pyproject.toml               # Configuración del paquete
 └── LICENSE                     # Licencia
 ```
 
@@ -239,7 +236,7 @@ MNEME---Motor-de-Memoria-Neural-M-rfica/
 
 ### Requisitos del Sistema
 
-- **Python**: 3.8+ (recomendado 3.11+)
+- **Python**: 3.10+ (recomendado 3.11+)
 - **PyTorch**: 2.0+ (con soporte CUDA/MPS opcional)
 - **Memoria RAM**: 8GB+ (recomendado 16GB+)
 - **GPU**: Opcional pero recomendada (NVIDIA RTX 3060+ o Apple M1+)
@@ -249,10 +246,10 @@ MNEME---Motor-de-Memoria-Neural-M-rfica/
 
 ```bash
 # Instalar desde PyPI (cuando esté disponible)
-pip install mneme
+pip install mnemosys
 
 # O con dependencias específicas
-pip install mneme[gpu,monitoring,security]
+pip install mnemosys[gpu,security]
 ```
 
 ### Instalación desde Fuente
@@ -317,8 +314,8 @@ pip install -e .[monitoring]
 ### Verificación de Instalación
 
 ```bash
-# Verificar instalación
-python -c "import mneme; print(f'MNEME v{mneme.__version__} instalado correctamente')"
+# Verificar instalación (el import conserva el nombre histórico "mneme")
+python -c "import mneme; print(f'MNEMOSYS v{mneme.__version__} instalado correctamente')"
 
 # Ejecutar tests
 pytest tests/ -v
@@ -333,218 +330,157 @@ python -c "from mneme import MnemeConfig; print(MnemeConfig().to_dict())"
 
 ```python
 import torch
-from mneme import ZSpace, MnemeConfig, SecurityLevel, LockType
+from mneme import ZSpace, MnemeConfig
 
-# Configuración segura con validaciones mejoradas
+# El cifrado en reposo y la firma HMAC se activan con una clave estable
+# (también puede venir de la variable de entorno MNEME_SECRET_KEY)
 config = MnemeConfig(
-    security_level=SecurityLevel.SAFETENSORS,
+    secret_key=b"clave_estable_de_32_bytes_o_mas_",
     validate_inputs=True,
     enable_encryption=True,
-    # Nuevas opciones v2.0.1
-    enable_error_context=True,
-    enable_metrics=True,
-    enable_adaptive_cache=True
 )
-mneme = ZSpace(config=config)
+mneme = ZSpace(config)
 
-# Crear tensor con validación automática
-tensor = torch.randn(100, 100)
+# Registrar (routing inteligente + validación + almacenamiento cifrado)
+tensor = torch.randn(64, 64)          # 2-D pequeño → ruta RAW, sin pérdida
+desc = mneme.register("my_tensor", tensor)
 
-# Registrar con locks granulares y safetensors
-with mneme.lock_manager.acquire_lock("my_tensor", LockType.WRITE):
-    desc = mneme.register("my_tensor", tensor)
-
-# Cargar con lazy decompression
-loaded_tensor = mneme.load("my_tensor")
-
-# Verificar integridad
+# Cargar (síntesis determinista; en GPU si hay CUDA)
+loaded_tensor = mneme.load("my_tensor").cpu()
 assert torch.allclose(tensor, loaded_tensor)
 
-# Verificar métricas en tiempo real
+# Métricas reales del sistema
 stats = mneme.get_stats()
-print(f"Storage stores: {stats['metrics']['storage_stores']}")
-print(f"Storage loads: {stats['metrics']['storage_loads']}")
-
-# Listar tensores (memoria + storage)
-tensor_list = mneme.list_tensors()
-print(f"Tensores en memoria: {tensor_list['memory_tensors']}")
-print(f"Tensores en storage: {tensor_list['storage_tensors']}")
-print(f"Tensores en ambos: {tensor_list['both']}")
-print("✅ Serialización segura con safetensors")
-
-# Ver métricas en tiempo real
-print(f"Operaciones realizadas: {mneme.metrics.operations}")
-print(f"Memoria utilizada: {mneme.metrics.memory_usage}")
-print(f"Cache hit rate: {mneme.metrics.cache_hit_rate}")
+print(f"Salud: {stats['health']}")
+print(f"Escrituras a storage: {stats['metrics']['storage_stores']}")
+print(f"Nivel de seguridad: {stats['security']['config']['security_level']}")
+print(f"Cache hits: {stats['cache']['hit_count']}")
 ```
 
-### 🆕 Mejoras v2.0.1
+### 🧪 Validación y errores con contexto
 
 ```python
 import torch
-from mneme import ZSpace, MnemeConfig, ErrorContext
+from mneme import ZSpace, ValidationError
 
-# Configuración con mejoras v2.0.1
-config = MnemeConfig(
-    # Sistema de errores contextuales
-    enable_error_context=True,
-    error_logging_level="INFO",
-    
-    # Cache adaptativo mejorado
-    enable_adaptive_cache=True,
-    cache_strategy="adaptive",
-    cache_compression_threshold=1024,
-    
-    # Locks granulares optimizados
-    max_locks=1000,
-    lock_cleanup_interval=300,
-    enable_deadlock_detection=True,
-    
-    # LazyTensor optimizado
-    lazy_tensor_memory_limit="1GB",
-    enable_metadata_caching=True,
-    
-    # Métricas en tiempo real
-    enable_metrics=True,
-    metrics_update_interval=1.0
-)
+mneme = ZSpace()
 
-mneme = ZSpace(config=config)
-
-# Uso con manejo de errores mejorado
 try:
-    tensor = torch.randn(1000, 1000)
-    desc = mneme.register("large_tensor", tensor)
-    
-    # Cargar con cache adaptativo
-    loaded = mneme.load("large_tensor")
-    
-    print("✅ Operación exitosa con mejoras v2.0.1")
-    
-except Exception as e:
-    # Error contextual con información detallada
-    if hasattr(e, 'error_context'):
-        print(f"❌ Error: {e}")
-        print(f"Contexto: {e.error_context}")
-        print(f"Código de error: {e.error_code}")
-        print(f"Timestamp: {e.timestamp}")
-    
-# Ver estadísticas del sistema
-print(f"Locks activos: {mneme.lock_manager.active_locks}")
-print(f"Cache hit rate: {mneme.cache.hit_rate}")
-print(f"Memoria LazyTensor: {mneme.lazy_tensor_manager.memory_usage}")
+    mneme.register("no_tensor", {"esto": "no es un tensor"})
+except ValidationError as e:
+    print(f"Rechazado por validación: {e}")
+
+try:
+    mneme.register("", torch.randn(4, 4))
+except ValidationError as e:
+    print(f"Nombre vacío rechazado: {e}")
+
+# La manipulación del almacén en disco (bytes corruptos, blob truncado,
+# clave equivocada) aflora como StorageAuthenticationError: nunca hay
+# corrupción silenciosa (verificado en la batería del 16-ago-2026).
 ```
 
 ### 🏗️ Arquitectura Modular
 
 ```python
-from mneme import (
-    ZSpace, SecurityManager, SecureStorageBackend, 
-    GranularLockManager, LazyTensor, AdaptiveCache
-)
+from mneme import ZSpace
 
-# Módulos especializados
-security_manager = SecurityManager()
-storage_backend = SecureStorageBackend()
-lock_manager = GranularLockManager()
-adaptive_cache = AdaptiveCache(max_size_bytes=1024*1024*1024)
-
-# Uso integrado
+# Los módulos especializados viven integrados en cada instancia
 mneme = ZSpace()
 print(f"Cache stats: {mneme.adaptive_cache.get_stats()}")
 print(f"Security stats: {mneme.security_manager.get_security_stats()}")
+print(f"Lock stats: {mneme.lock_manager.get_lock_stats()}")
+print(f"Storage stats: {mneme.storage_backend.get_stats()}")
 ```
 
-### Procesamiento Paralelo
+### Procesamiento Concurrente
 
 ```python
 import torch
-from mneme import ZSpace, ParallelExecutionMode
+from concurrent.futures import ThreadPoolExecutor
+from mneme import ZSpace
 
-# Inicializar MNEME con procesamiento paralelo
+# ZSpace es thread-safe: locks granulares por nombre de tensor
+# (verificado: 640 operaciones en 8 hilos, 0 incidentes)
 mneme = ZSpace()
-
-# Crear múltiples tensores
 tensors = [torch.randn(1000, 1000) for _ in range(8)]
 
-# Procesar en paralelo
-for i, tensor in enumerate(tensors):
-    desc = mneme.register_parallel(f"tensor_{i}", tensor, 
-                                   target_ratio=0.1, 
-                                   decomp_type=DecompType.TT)
+with ThreadPoolExecutor(max_workers=4) as pool:
+    descs = list(pool.map(
+        lambda item: mneme.register(f"tensor_{item[0]}", item[1], target_ratio=0.1),
+        enumerate(tensors),
+    ))
 
-# Cargar con optimizaciones paralelas
-loaded_tensors = []
-for i in range(len(tensors)):
-    loaded = mneme.load_parallel(f"tensor_{i}")
-    loaded_tensors.append(loaded)
+with ThreadPoolExecutor(max_workers=4) as pool:
+    loaded = list(pool.map(lambda i: mneme.load(f"tensor_{i}"), range(8)))
 
-# Métricas de paralelización
-metrics = mneme.get_parallel_metrics()
-print(f"Eficiencia paralela: {metrics['parallel_efficiency']:.2%}")
+print(f"Locks granulares: {mneme.get_stats()['locks']}")
 ```
 
 ### Seguridad Avanzada
 
 ```python
-from mneme import ZSpace, SecurityLevel
+import torch
+from mneme import (SecureSerializer, SecurityConfig, SecurityLevel,
+                   ZSpace, MnemeConfig)
 
-mneme = ZSpace()
+secret_key = b"clave_estable_de_32_bytes_o_mas_"
+sensitive_tensor = torch.randn(64, 64)
 
-# Crear tensor sensible
-sensitive_tensor = torch.randn(100, 100)
+# 1) Serialización firmada (HMAC) con el marco MNEM — sin pickle
+serializer = SecureSerializer(SecurityConfig(
+    security_level=SecurityLevel.HMAC,
+    require_signatures=True,
+    signing_key=secret_key,
+))
+signed = serializer.serialize_tensor(sensitive_tensor)
+restored, _meta = serializer.deserialize_tensor(signed)
+assert torch.allclose(sensitive_tensor, restored)
 
-# Cifrar con seguridad cuántica
-encrypted_data, metadata = mneme.encrypt_tensor(sensitive_tensor, 
-                                               key_id="quantum_key")
-
-# Descifrar con verificación
-decrypted_tensor = mneme.decrypt_tensor(encrypted_data, metadata)
-
-# Autenticación multifactor
-credentials = {"username": "user", "password": "pass", "mfa_token": "123456"}
-session_id = mneme.authenticate_user(credentials)
-
-# Rotar claves automáticamente
-mneme.rotate_encryption_keys()
+# 2) Cifrado en reposo dentro de ZSpace (secret_key lo habilita)
+mneme = ZSpace(MnemeConfig(secret_key=secret_key))
+mneme.register("tensor_sensible", sensitive_tensor)
+decrypted = mneme.load("tensor_sensible").cpu()
+assert torch.allclose(sensitive_tensor, decrypted)
 ```
 
-### Almacenamiento Inteligente
+### Almacenamiento Persistente y Rehidratación
 
 ```python
-from mneme import ZSpace, StorageTier
+import torch
+from mneme import ZSpace, MnemeConfig
 
-mneme = ZSpace()
+# Almacén persistente en disco (SQLite + safetensors + LZ4)
+mneme = ZSpace(MnemeConfig(storage_path="./mi_almacen"))
+mneme.register("medium", torch.randn(1000, 1000), target_ratio=0.1)
+referencia = mneme.load("medium").cpu()
+mneme.cleanup()
 
-# Crear tensores de diferentes tamaños
-small_tensor = torch.randn(100, 100)    # → Memoria
-medium_tensor = torch.randn(1000, 1000) # → SSD  
-large_tensor = torch.randn(5000, 5000)  # → HDD
+# Una instancia NUEVA reconstruye desde disco, bit a bit
+mneme2 = ZSpace(MnemeConfig(storage_path="./mi_almacen"))
+rehidratado = mneme2.load("medium").cpu()
+assert torch.equal(referencia, rehidratado)  # síntesis determinista
 
-# El sistema decide automáticamente el nivel de almacenamiento
-mneme.register("small", small_tensor)
-mneme.register("medium", medium_tensor) 
-mneme.register("large", large_tensor)
-
-# Métricas de almacenamiento
-storage_metrics = mneme.get_storage_metrics()
+# Métricas reales de almacenamiento
+storage_metrics = mneme2.get_stats()["metrics"]
+print(f"Lecturas: {storage_metrics['read_operations']}")
 print(f"Cache hits: {storage_metrics['cache_hits']}")
-print(f"Operaciones de lectura: {storage_metrics['read_operations']}")
 ```
 
 ### Mejoras Arquitecturales
 
 ```python
-from mneme import ZSpace, LockType
+import torch
+from mneme import ZSpace
 
 mneme = ZSpace()
 
-# Locks granulares para mejor concurrencia
-with mneme.lock_manager.acquire_lock("tensor1", LockType.WRITE):
-    desc = mneme.register("tensor1", torch.randn(1000, 1000))
+# Los locks granulares por nombre son automáticos en register/load/update;
+# también pueden usarse directamente:
+with mneme.lock_manager.write_lock("tensor1"):
+    pass  # sección crítica propia sobre "tensor1"
 
-# Safetensors para serialización segura
-# (automático en el registro)
+# Safetensors para serialización segura (automático en el registro)
 desc = mneme.register("secure_tensor", torch.randn(500, 500))
 
 # Lazy decompression para optimizar memoria
@@ -582,31 +518,32 @@ optimizer = MNEMEOptimizer(
 
 # Obtener métricas en tiempo real
 metrics = mneme.get_performance_metrics()
-print(f"Operaciones totales: {metrics['metrics']['operations']['total']}")
-print(f"Uso de memoria: {metrics['metrics']['memory']['current_usage']/1024/1024:.1f}MB")
+print(f"Lecturas: {metrics['metrics']['read_operations']}")
+print(f"Tensores almacenados: {metrics['metrics']['tensor_count']}")
+print(f"Bytes en storage: {metrics['metrics']['total_storage_bytes']/1024/1024:.1f}MB")
 
 # Estado de salud del sistema
 health = mneme.get_health_status()
-print(f"Estado: {health}")
+print(f"Estado: {health.value}")
 
 # Optimizar sistema automáticamente
 optimization_result = mneme.optimize_system()
-print(f"Optimizaciones aplicadas: {len(optimization_result)}")
+for action in optimization_result.get("actions", []):
+    print(f"- {action}")
 ```
 
-### Compresión de Modelos con MNEME v2.0
+### ⚡ Turbo: Inferencia con Pesos Comprimidos
+
+`compress_model_turbo` es la vía para ejecutar modelos con la compresión
+gobernando de verdad la inferencia: el peso denso no queda residente. Con SVD
+ni siquiera se materializa (forward factorizado con dos matmuls chicos);
+con INT8/RAW el comprimido vive como buffer y el peso se sintetiza dentro
+del forward y se libera (recompute en backward). Medido en 8×Linear 2048²:
+**VRAM residente 20.5 % del denso, pico de forward ÷4.9, latencia a la par.**
 
 ```python
 import torch.nn as nn
-from mneme import compress_model, get_compression_stats, CompressionConfig
-
-# Configuración avanzada de compresión
-config = CompressionConfig(
-    target_ratio=0.1,
-    use_parallel_processing=True,
-    enable_security=True,
-    memory_limit=50 * 1024 * 1024  # 50MB
-)
+from mneme import compress_model_turbo, CompressionConfig
 
 model = nn.Sequential(
     nn.Linear(784, 512), nn.ReLU(),
@@ -614,30 +551,51 @@ model = nn.Sequential(
     nn.Linear(256, 10)
 )
 
-# Comprimir con procesamiento paralelo
-compressed = compress_model(model, config=config)
+turbo = compress_model_turbo(
+    model,
+    config=CompressionConfig(target_ratio=0.1, decomp_type="svd"),
+    min_params=10000,
+)
 
-# Estadísticas detalladas
+# Las salidas reflejan la pérdida real de la compresión (medible),
+# los pesos van congelados y el gradiente fluye a entrada y bias.
+# Soporta modelos .half()/.cuda(), state_dict y pesos podados (ruta sparse).
+```
+
+### Compresión de Modelos (pipeline de almacenamiento)
+
+```python
+import torch.nn as nn
+from mneme import compress_model, get_compression_stats, CompressionConfig
+
+config = CompressionConfig(target_ratio=0.1)
+model = nn.Sequential(
+    nn.Linear(784, 512), nn.ReLU(),
+    nn.Linear(512, 256), nn.ReLU(),
+    nn.Linear(256, 10)
+)
+
+compressed = compress_model(model, config=config)
 stats = get_compression_stats(compressed)
 print(f"Compresión: {stats['overall_ratio']:.1%}")
 print(f"Capas comprimidas: {stats['compressed_layers']}")
-
-# Estadísticas de rendimiento
-perf_stats = get_model_performance_stats(compressed)
-print(f"Tiempo promedio: {perf_stats['avg_forward_time']:.4f}s")
 ```
+
+> **Nota honesta** (verificada empíricamente el 16-ago-2026): `compress_model`
+> registra los pesos comprimidos en ZSpace pero su forward sigue usando el
+> peso original — demuestra el pipeline de almacenamiento y sirve para medir
+> reconstrucción, no ahorra memoria de inferencia. Para eso está
+> `compress_model_turbo` (arriba). Para evaluar calidad de una ruta de
+> compresión sobre un modelo, el patrón de referencia es el de
+> `benchmarks/bench_pythia_*.py`: `register → load → weight.copy_()`.
 
 ### Capas MNEME Transparentes v2.0
 
 ```python
 from mneme import ZLinear, ZConv2d, ZAttention, ZTransformerBlock, CompressionConfig
 
-# Configuración con procesamiento paralelo y seguridad
-config = CompressionConfig(
-    target_ratio=0.1,
-    use_parallel_processing=True,
-    enable_security=True
-)
+# Configuración de compresión
+config = CompressionConfig(target_ratio=0.1)
 
 # Modelo con capas MNEME
 model = nn.Sequential(
@@ -687,55 +645,48 @@ transformer = ZTransformerBlock(
 
 **Monitor** → Collect Metrics → Analyze → Alert → Optimize → Report
 
-## 📈 Benchmarks Avanzados v2.0
+## 📈 Benchmarks Reales (16-ago-2026)
 
-### Procesamiento Paralelo
+Todos con artefacto reproducible (JSON en `benchmarks/` y scripts de la batería).
 
-**8 Tensores de 1000x1000**
-- Procesamiento secuencial: 2.4s
-- Procesamiento paralelo: 0.3s (8x aceleración)
-- Eficiencia: 95%
+### Pythia-410M · WikiText-2 (perplejidad, menor es mejor)
 
-**Descomposición de Tensores**
-- TT Decomposition: 4x aceleración
-- CP Decomposition: 6x aceleración  
-- Tucker Decomposition: 3x aceleración
+| Configuración | PPL | Δ vs FP16 |
+|---|---|---|
+| FP16 (baseline) | **15.07** | — |
+| GPTQ INT4 (g=64, 512 muestras calibración) | **19.97** | +32.5 % |
+| INT4 group-wise sin calibrar (g=128) | **24.25** | +60.9 % |
 
-### Seguridad Avanzada
+*La reparación del offset de cuantización (ago-2026) se midió aquí: el INT4
+sin calibrar pasó de PPL 97.7 a 24.25 con la misma compresión (0.36).*
 
-**Cifrado de Tensores**
-- AES-GCM: <50μs por tensor
-- ChaCha20-Poly1305: <30μs por tensor
-- Quantum-Safe: <100μs por tensor
+### Turbo (8×Linear 2048², fp32, CUDA)
 
-**Autenticación**
-- MFA Setup: <10ms
-- Token Validation: <1ms
-- Session Management: <5ms
+| | Denso | Turbo SVD 0.1 | Turbo INT8 |
+|---|---|---|---|
+| VRAM residente | 128.1 MB | **26.3 MB** | 34.0 MB |
+| Pico de forward | 138.2 MB | **28.3 MB** | 52.0 MB |
+| Latencia mediana | 0.91 ms | **0.94 ms** | 271 ms |
 
-### Almacenamiento Inteligente
+### Fidelidad por ruta (tensores de 10⁶ elementos)
 
-**Migración Automática**
-- Memoria → SSD: <5ms
-- SSD → HDD: <50ms
-- HDD → Archive: <200ms
+| Ruta | Bytes | Error relativo |
+|---|---|---|
+| RAW (safetensors+LZ4) | 100 % | **0 (bit-exacto)** |
+| SVD 0.1 · dato con estructura (rango-30 + 1 % ruido) | 20 % | 0.9 % |
+| SVD 0.1 · ruido puro | 20 % | 85 % |
+| INT8 por grupos | 26.6 % | **0.6 %** |
+| TT · 3-D separable + 1 % ruido | 1.6 % | 1.0 % |
 
-**Compresión Adaptativa**
-- Small tensors: 2-5x compresión
-- Large tensors: 10-20x compresión
-- Adaptive decision: <1ms
+*La lección medida: la estructura compra fidelidad — la misma ruta rinde seis
+órdenes de magnitud mejor sobre dato estructurado que sobre ruido.*
 
-### Monitoreo de Rendimiento
+### Almacenamiento y síntesis
 
-**Métricas en Tiempo Real**
-- Collection latency: <1ms
-- Analysis time: <5ms
-- Alert generation: <10ms
-
-**Optimización Automática**
-- Memory optimization: <100ms
-- CPU optimization: <50ms
-- Storage optimization: <200ms
+- Register / load (1000², SVD): 57 ms / 6 ms · (2000²): 227 ms / 28 ms
+- Relectura cacheada: ~×20 más rápida (166 ms → 8 ms en RAW de 4 MB)
+- Rehidratación cross-instancia: 36/36 bit-idéntica · arranque perezoso 1.9 ms
+- Corrupción de blobs y clave errónea: 3/3 detectadas, 0 silenciosas
 
 ## 🔬 Funcionalidades Avanzadas v2.0
 
@@ -906,12 +857,12 @@ transformer = ZTransformerBlock(
 ## 📚 Citación
 
 ```bibtex
-@software{mneme2025,
-  title = {MNEME v2.0: Motor de Memoria Neural Mórfica},
+@software{mnemosys2026,
+  title = {MNEMOSYS: Motor de Memoria Neural Mórfica},
   author = {Esraderey and Raul Cruz Acosta},
-  year = {2025},
+  year = {2026},
   url = {https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica},
-  note = {Sistema avanzado de memoria computacional con procesamiento paralelo, seguridad cuántica y monitoreo en tiempo real}
+  note = {Memoria Neural Estructurada Mórfica con Orquestación de Síntesis Y Seguridad: motor de memoria computacional con síntesis determinista, compresión tensorial e inferencia con pesos comprimidos}
 }
 ```
 

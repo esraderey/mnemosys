@@ -156,11 +156,7 @@ import torch.nn as nn
 from mneme_torch import compress_model, get_compression_stats, CompressionConfig
 
 # Configuración de compresión
-config = CompressionConfig(
-    target_ratio=0.1,
-    compression_level=CompressionLevel.HIGH,
-    memory_limit=50 * 1024 * 1024  # 50MB
-)
+config = CompressionConfig(target_ratio=0.1)
 
 model = nn.Sequential(
     nn.Linear(784, 512), nn.ReLU(),

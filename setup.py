@@ -17,8 +17,8 @@ def read_requirements():
         return [line.strip() for line in fh if line.strip() and not line.startswith("#")]
 
 setup(
-    name="mneme",
-    version="2.0.0",
+    name="mnemosys",
+    version="2.0.1",
     author="Esraderey and Raul Cruz Acosta",
     author_email="msc.framework@gmail.com",
     description="Motor de Memoria Neural Mórfica v2.0 - Sistema avanzado con Safetensors, Locks Granulares y Cache Adaptativo",
@@ -39,8 +39,6 @@ setup(
         "License :: Other/Proprietary License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
@@ -48,7 +46,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: System :: Distributed Computing",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.10",
     install_requires=read_requirements(),
     extras_require={
         "dev": [
@@ -68,8 +66,8 @@ setup(
             "pycryptodome>=3.15.0",
         ],
         "optimization": [
-            "numba>=0.56.0",
-            "numba-cuda>=0.56.0",
+            "numba>=0.57.0",
+            "numba-cuda>=0.57.0",
         ],
         "all": [
             "pytest>=6.0",
@@ -82,13 +80,8 @@ setup(
             "cupy>=10.0.0",
             "cryptography>=3.4.0",
             "pycryptodome>=3.15.0",
-            "numba>=0.56.0",
-            "numba-cuda>=0.56.0",
-        ],
-    },
-    entry_points={
-        "console_scripts": [
-            "mneme=mneme.cli:main",
+            "numba>=0.57.0",
+            "numba-cuda>=0.57.0",
         ],
     },
     include_package_data=True,

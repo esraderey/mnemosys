@@ -3,17 +3,17 @@
 
 # Core dependencies
 torch>=2.0.0
-numpy>=1.20.0
+numpy>=1.21.0
 scipy>=1.7.0
 
 # Tensor decomposition
-tensorly>=0.7.0
+tensorly>=0.8.0
 
 # Compression
-lz4>=3.0.0
+lz4>=4.0.0
 
 # Hashing
-xxhash>=2.0.0
+xxhash>=3.0.0
 
 # System monitoring
 psutil>=5.8.0
@@ -22,15 +22,16 @@ psutil>=5.8.0
 scikit-learn>=1.0.0
 
 # Security and cryptography
-cryptography>=3.0.0
-pycryptodome>=3.10.0
+cryptography>=3.4.0
+pycryptodome>=3.15.0
 
 # Advanced serialization
 msgpack>=1.0.0
 safetensors>=0.3.0
+mscs>=2.4.0
 
 # Performance optimization
-numba>=0.50.0
+numba>=0.57.0
 
 # Development and testing
 pytest>=6.0.0

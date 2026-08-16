@@ -17,8 +17,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write
-  actions: read
 
 env:
   PYTHON_VERSION: '3.10'
@@ -27,21 +25,25 @@ jobs:
   security-scan:
     name: 🔒 Security Analysis
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: read
+      security-events: write  # required by github/codeql-action/upload-sarif
+      actions: read           # required by upload-sarif on private repos
+
     steps:
     - name: 📥 Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       with:
         fetch-depth: 0  # Full history for better analysis
     
     - name: 🐍 Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
     
     - name: 📦 Cache dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: |
           ~/.cache/pip
@@ -58,27 +60,24 @@ jobs:
         pip install bandit safety semgrep
     
     - name: 🔒 Bandit Security Scan
-      continue-on-error: true
       run: |
         echo "Running Bandit security scan..."
         if [ -d "src/" ]; then
           bandit -r src/ -f json -o bandit-report.json || true
-          bandit -r src/ -f txt || echo "⚠️ Bandit found issues"
+          bandit -r src/ -f txt
         else
           echo "⚠️ src/ directory not found"
           echo '{"results": [], "errors": ["src directory not found"]}' > bandit-report.json
         fi
-    
+
     - name: 🛡️ Safety Dependency Check
-      continue-on-error: true
       run: |
         echo "Checking for known security vulnerabilities..."
         safety check --json --output safety-report.json || true
-        safety check || echo "⚠️ Safety found vulnerabilities"
-    
+        safety check
+
     - name: 🔍 Semgrep Security Scan
-      continue-on-error: true
-      uses: returntocorp/semgrep-action@v1
+      uses: returntocorp/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d # v1
       with:
         config: >-
           p/security-audit
@@ -92,14 +91,14 @@ jobs:
     - name: 📊 Upload Bandit SARIF
       if: always()
       continue-on-error: true
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@f3712979fa5f215279b101dd0a2e3bdfb4353324 # v3
       with:
         sarif_file: semgrep.sarif
         category: semgrep
     
     - name: 📊 Upload security reports
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: security-reports-${{ github.run_number }}
         path: |
@@ -115,10 +114,10 @@ jobs:
     
     steps:
     - name: 📥 Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
     
     - name: 🐍 Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
@@ -129,24 +128,22 @@ jobs:
         pip install pip-audit safety pip-licenses
     
     - name: 🔍 Pip Audit (OSV Database)
-      continue-on-error: true
       run: |
         echo "Running pip-audit against OSV database..."
         pip-audit --desc --format json --output pip-audit-report.json || true
-        pip-audit --desc || echo "⚠️ Vulnerabilities found"
-    
+        pip-audit --desc
+
     - name: 🛡️ Safety Check (Safety DB)
-      continue-on-error: true
       run: |
         echo "Running Safety vulnerability check..."
         if [ -f "requirements.txt" ]; then
           safety check -r requirements.txt --json --output safety-detailed.json || true
-          safety check -r requirements.txt || echo "⚠️ Vulnerabilities found"
+          safety check -r requirements.txt
         else
           echo "⚠️ requirements.txt not found"
         fi
-    
-    - name: 📋 Generate dependency tree
+
+    - name: 📋 Generate dependency tree (informational, non-blocking)
       continue-on-error: true
       run: |
         pip install pipdeptree
@@ -155,7 +152,7 @@ jobs:
     
     - name: 📊 Upload dependency reports
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: dependency-audit-${{ github.run_number }}
         path: |
@@ -166,17 +163,21 @@ jobs:
         if-no-files-found: warn
 
   code-quality:
-    name: 📊 Code Quality Analysis
+    # Informational job: complexity/maintainability/lint/type reports with no agreed
+    # pass/fail threshold. Marked non-blocking at the job level (see continue-on-error
+    # below) rather than hiding that fact inside per-step `|| echo`.
+    name: 📊 Code Quality Analysis (informational, non-blocking)
     runs-on: ubuntu-latest
-    
+    continue-on-error: true
+
     steps:
     - name: 📥 Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       with:
         fetch-depth: 0
     
     - name: 🐍 Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
@@ -191,7 +192,7 @@ jobs:
     - name: 🎨 SonarCloud Scan
       if: env.SONAR_TOKEN != ''
       continue-on-error: true
-      uses: SonarSource/sonarcloud-github-action@master
+      uses: SonarSource/sonarcloud-github-action@ba3875ecf642b2129de2b589510c81a8b53dbf4e # master (floating branch, pinned 2026-08-14; re-verify periodically)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -229,7 +230,7 @@ jobs:
     
     - name: 📊 Upload quality reports
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: quality-reports-${{ github.run_number }}
         path: |
@@ -246,10 +247,10 @@ jobs:
     
     steps:
     - name: 📥 Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
     
     - name: 🐍 Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
@@ -262,31 +263,28 @@ jobs:
         pip install pytest pytest-cov pytest-timeout
     
     - name: 🧪 Run security unit tests
-      continue-on-error: true
       timeout-minutes: 10
       run: |
         if [ -f "tests/test_security.py" ]; then
-          python -m pytest tests/test_security.py -v --timeout=60 --tb=short || echo "⚠️ Security tests failed"
+          python -m pytest tests/test_security.py -v --timeout=60 --tb=short
         else
           echo "⚠️ tests/test_security.py not found"
         fi
-    
+
     - name: 🔒 Run penetration tests
-      continue-on-error: true
       timeout-minutes: 10
       run: |
         if [ -f "tests/test_security_penetration.py" ]; then
-          python -m pytest tests/test_security_penetration.py -v --timeout=60 --tb=short || echo "⚠️ Penetration tests failed"
+          python -m pytest tests/test_security_penetration.py -v --timeout=60 --tb=short
         else
           echo "⚠️ tests/test_security_penetration.py not found"
         fi
-    
+
     - name: 🛡️ Run resistance tests
-      continue-on-error: true
       timeout-minutes: 10
       run: |
         if [ -f "tests/test_security_resistance.py" ]; then
-          python -m pytest tests/test_security_resistance.py -v --timeout=60 --tb=short || echo "⚠️ Resistance tests failed"
+          python -m pytest tests/test_security_resistance.py -v --timeout=60 --tb=short
         else
           echo "⚠️ tests/test_security_resistance.py not found"
         fi
@@ -385,10 +383,9 @@ jobs:
         SCRIPT
     
     - name: 🔒 Run integrated security tests
-      continue-on-error: true
       timeout-minutes: 5
       run: |
-        python test_security_features.py || echo "⚠️ Some security features not available yet"
+        python test_security_features.py
     
     - name: 📊 Generate security test report
       if: always()
@@ -402,7 +399,7 @@ jobs:
     
     - name: 📊 Upload test results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: security-test-results-${{ github.run_number }}
         path: |
@@ -416,10 +413,10 @@ jobs:
     
     steps:
     - name: 📥 Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
     
     - name: 🐍 Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
@@ -431,24 +428,22 @@ jobs:
         pip install -e . || echo "⚠️ Package installation partial"
         pip install pip-licenses licensecheck
     
-    - name: 📋 License compliance check
+    - name: 📋 License compliance check (informational, non-blocking)
       continue-on-error: true
       run: |
         echo "Generating license report..."
         pip-licenses --format=json --output-file=licenses.json || true
         pip-licenses --format=markdown --output-file=licenses.md || true
         pip-licenses || echo "⚠️ License check completed"
-    
+
     - name: 🔍 License compatibility check
-      continue-on-error: true
       run: |
         echo "Checking license compatibility..."
-        pip-licenses --fail-on="GPL;AGPL" --format=json > incompatible-licenses.json || true
+        pip-licenses --fail-on="GPL;AGPL" --format=json > incompatible-licenses.json
         echo "Checking for restrictive licenses..."
         pip-licenses --summary | grep -E "(GPL|AGPL|LGPL)" || echo "No restrictive licenses found"
-    
+
     - name: 🔒 Security compliance validation
-      continue-on-error: true
       run: |
         cat > test_compliance.py << 'SCRIPT'
         #!/usr/bin/env python3
@@ -488,12 +483,12 @@ jobs:
             result = test_security_levels()
             sys.exit(0 if result else 1)
         SCRIPT
-        
-        python test_compliance.py || echo "⚠️ Compliance validation incomplete"
+
+        python test_compliance.py
     
     - name: 📊 Upload compliance reports
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: compliance-reports-${{ github.run_number }}
         path: |
@@ -535,7 +530,7 @@ jobs:
         cat security-summary.md
     
     - name: 📊 Upload summary
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: security-summary-${{ github.run_number }}
         path: security-summary.md
