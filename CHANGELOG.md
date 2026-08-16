@@ -5,6 +5,18 @@ Todos los cambios notables de MNEMOSYS (antes MNEME) se documentan en este archi
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-08-16
+
+Release de metadatos, sin cambios de código.
+
+### 🔧 Cambiado
+- **Licencia: BUSL-1.1 → Apache-2.0** (LICENSE, clasificadores y README):
+  uso libre con atribución y concesión explícita de patentes.
+- Los enlaces del proyecto (Homepage, Repository, Issues, Changelog) apuntan
+  al repositorio nuevo: https://github.com/esraderey/mnemosys
+- Portada (README) sin referencias al versionado interno «v2.x» de la era
+  MNEME, que confundía junto a la numeración pública 1.x de PyPI.
+
 ## [1.0.0] - 2026-08-16
 
 Primera release pública, bajo el nombre nuevo **MNEMOSYS** (Memoria Neural

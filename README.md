@@ -2,19 +2,24 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
-[![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL--1.1-blue.svg)](https://opensource.org/licenses/BUSL-1.1)
-[![Security](https://img.shields.io/badge/Security-Enterprise-green.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
-[![Performance](https://img.shields.io/badge/Performance-Optimized-orange.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
-[![Version](https://img.shields.io/badge/Version-1.0.0-purple.svg)](https://github.com/esraderey/mnemosys)
-[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/actions)
-[![Code Quality](https://img.shields.io/badge/Code%20Quality-A+-green.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Security](https://img.shields.io/badge/Security-Enterprise-green.svg)](https://github.com/esraderey/mnemosys)
+[![Performance](https://img.shields.io/badge/Performance-Optimized-orange.svg)](https://github.com/esraderey/mnemosys)
+[![Version](https://img.shields.io/badge/Version-1.0.1-purple.svg)](https://github.com/esraderey/mnemosys)
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue.svg)](https://github.com/esraderey/mnemosys/actions)
+[![Code Quality](https://img.shields.io/badge/Code%20Quality-A+-green.svg)](https://github.com/esraderey/mnemosys)
 
 **MNEMOSYS** (antes MNEME) redefine la memoria computacional mediante un motor neural inspirado en estructuras biológicas con **arquitectura modular segura**, **locks granulares**, **safetensors**, **lazy decompression** y **cache adaptativo**.  
 En lugar de almacenar datos en ubicaciones fijas, **MNEMOSYS guarda descriptores compactos y generativos** que reconstruyen el contenido de forma determinista, como si fueran recuerdos que emergen bajo demanda.
 
 > El paquete Python conserva el import histórico — `import mneme` — como Mnemosyne conserva a sus musas: la distribución se llama `mnemosys`, el módulo se sigue llamando `mneme`.
 
-## 🆕 Mejoras v2.0.1
+## 📜 Historial de mejoras (era MNEME)
+
+> Nota de versionado: la primera release pública en PyPI es la **1.0.0**. Las
+> menciones a «v2.x» en esta sección corresponden a la numeración interna del
+> motor cuando se llamaba MNEME, previa al estreno y nunca publicada — ver
+> [CHANGELOG.md](CHANGELOG.md).
 
 ### 🐛 **Corrección Crítica del Storage Backend**
 - **Integración completa del SecureStorageBackend** - Corregido problema crítico donde el storage backend nunca se utilizaba
@@ -81,7 +86,7 @@ En lugar de almacenar datos en ubicaciones fijas, **MNEMOSYS guarda descriptores
 
 ---
 
-## 🚀 Nuevas Funcionalidades v2.0
+## 🚀 Funcionalidades del núcleo
 
 ### ⚡ **Optimización en Paralelo**
 - **Procesamiento paralelo** con ThreadPoolExecutor, ProcessPoolExecutor y asyncio
@@ -182,7 +187,7 @@ Números de ejecuciones reales en esta máquina (CUDA), no estimaciones:
 | Pythia-410M · WikiText-2 (PPL) | FP16 **15.07** · GPTQ INT4 **19.97** (+32 %) · INT4 naive **24.25** (+61 %) |
 | Register / load (1000×1000, SVD) | 57 ms / 6 ms (28 ms el load de 2000², cacheado ~×20 más rápido) |
 
-## 🏗️ Arquitectura Modular Segura v2.0
+## 🏗️ Arquitectura Modular Segura
 
 ### 📦 Módulos Especializados
 ```
@@ -203,12 +208,12 @@ src/mneme/
 - **Locks granulares** - Mejor concurrencia y seguridad
 - **Arquitectura modular** - Separación clara de responsabilidades
 
-## 🏗️ Estructura del Proyecto v2.0
+## 🏗️ Estructura del Proyecto
 
 ```
 MNEME---Motor-de-Memoria-Neural-M-rfica/
 ├── src/mneme/                    # Código fuente modular
-│   ├── __init__.py              # Exports principales v2.0
+│   ├── __init__.py              # Exports principales
 │   ├── mneme_core.py            # Módulo principal seguro
 │   ├── mneme_security_core.py   # Seguridad y validación
 │   ├── mneme_storage_core.py    # Almacenamiento seguro
@@ -256,7 +261,7 @@ pip install mnemosys[gpu,security]
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica.git
+git clone https://github.com/esraderey/mnemosys.git
 cd MNEME---Motor-de-Memoria-Neural-M-rfica
 
 # Instalar dependencias
@@ -324,7 +329,7 @@ pytest tests/ -v
 python -c "from mneme import MnemeConfig; print(MnemeConfig().to_dict())"
 ```
 
-## 🚦 Uso Rápido v2.0.1
+## 🚦 Uso Rápido
 
 ### 🔒 Seguridad Garantizada
 
@@ -589,7 +594,7 @@ print(f"Capas comprimidas: {stats['compressed_layers']}")
 > compresión sobre un modelo, el patrón de referencia es el de
 > `benchmarks/bench_pythia_*.py`: `register → load → weight.copy_()`.
 
-### Capas MNEME Transparentes v2.0
+### Capas Z Transparentes
 
 ```python
 from mneme import ZLinear, ZConv2d, ZAttention, ZTransformerBlock, CompressionConfig
@@ -614,11 +619,11 @@ transformer = ZTransformerBlock(
 )
 ```
 
-## 🏗️ Arquitectura Avanzada v2.0
+## 🏗️ Arquitectura Avanzada
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        MNEME Core v2.0                         │
+│                         MNEMOSYS Core                          │
 ├─────────────────────────────────────────────────────────────────┤
 │  Z-Addr (Hashing)   │   Z-Gen (Synthesis)   │   Security (HMAC) │
 │  Cache (CPU-Aware)  │   Proof (Merkle)      │   Serializer      │
@@ -633,7 +638,7 @@ transformer = ZTransformerBlock(
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Flujo de datos mejorado v2.0
+### Flujo de datos
 
 **Store** → Tensor → Analyze → Decompose → Encrypt → Serialize → Sign (HMAC) → Compress → Store (Tiered) → Descriptor
 
@@ -688,7 +693,7 @@ sin calibrar pasó de PPL 97.7 a 24.25 con la misma compresión (0.36).*
 - Rehidratación cross-instancia: 36/36 bit-idéntica · arranque perezoso 1.9 ms
 - Corrupción de blobs y clave errónea: 3/3 detectadas, 0 silenciosas
 
-## 🔬 Funcionalidades Avanzadas v2.0
+## 🔬 Funcionalidades Avanzadas
 
 ### ⚡ **Procesamiento Paralelo**
 - Ejecución híbrida con threads, procesos y asyncio
@@ -726,7 +731,7 @@ sin calibrar pasó de PPL 97.7 a 24.25 con la misma compresión (0.36).*
 - Soporte completo para arquitecturas modernas
 - Estadísticas de rendimiento en tiempo real
 
-## 🎮 Aplicaciones v2.0
+## 🎮 Aplicaciones
 
 ### **Machine Learning Avanzado**
 - Compresión y serving de modelos LLM con procesamiento paralelo
@@ -755,9 +760,9 @@ sin calibrar pasó de PPL 97.7 a 24.25 con la misma compresión (0.36).*
 - **Validación robusta** de entrada con InputValidator
 - **Locks granulares** para mejor concurrencia y seguridad
 
-## 🗺️ Roadmap v2.0.1
+## 🗺️ Roadmap
 
-### ✅ **Fase 1 – Núcleo Completo v2.0**
+### ✅ **Fase 1 – Núcleo Completo**
 - [x] Procesamiento paralelo híbrido
 - [x] Seguridad cuántica avanzada
 - [x] Almacenamiento inteligente por niveles
@@ -771,7 +776,7 @@ sin calibrar pasó de PPL 97.7 a 24.25 con la misma compresión (0.36).*
 - [x] **Cache adaptativo** con estrategias inteligentes
 - [x] **Validación robusta** de entrada
 
-### ✅ **Fase 1.1 – Mejoras v2.0.1 (Enero 2025)**
+### ✅ **Fase 1.1 – Mejoras de robustez (era MNEME, enero 2025)**
 - [x] **Sistema de errores contextuales** con información detallada
 - [x] **Configuración avanzada** con validaciones automáticas
 - [x] **Locks granulares optimizados** con detección de deadlocks
@@ -810,7 +815,7 @@ sin calibrar pasó de PPL 97.7 a 24.25 con la misma compresión (0.36).*
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guías de contribución
 - **[SECURITY.md](.github/SECURITY.md)** - Política de seguridad
 
-## 📋 Changelog v2.0.1
+## 📋 Historial detallado de la era MNEME (interno, pre-1.0.0)
 
 ### 🐛 **Corregido**
 - **Integración del SecureStorageBackend** - Corregido problema crítico donde el storage backend nunca se utilizaba
@@ -861,7 +866,7 @@ sin calibrar pasó de PPL 97.7 a 24.25 con la misma compresión (0.36).*
   title = {MNEMOSYS: Motor de Memoria Neural Mórfica},
   author = {Esraderey and Raul Cruz Acosta},
   year = {2026},
-  url = {https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica},
+  url = {https://github.com/esraderey/mnemosys},
   note = {Memoria Neural Estructurada Mórfica con Orquestación de Síntesis Y Seguridad: motor de memoria computacional con síntesis determinista, compresión tensorial e inferencia con pesos comprimidos}
 }
 ```
@@ -873,7 +878,7 @@ sin calibrar pasó de PPL 97.7 a 24.25 con la misma compresión (0.36).*
 - **CUDA** - Aceleración GPU
 - **Quantum Computing** - Algoritmos post-cuánticos
 
-## 💡 Filosofía v2.0
+## 💡 Filosofía
 
 *"La mejor compresión no es guardar los datos, sino guardar la receta para recrearlos de forma paralela y segura."*
 
@@ -881,18 +886,19 @@ sin calibrar pasó de PPL 97.7 a 24.25 con la misma compresión (0.36).*
 
 ## 📝 Licencia
 
-Business Source License 1.1 (BUSL-1.1) – ver [LICENSE](LICENSE)
+Apache License 2.0 – ver [LICENSE](LICENSE)
 
-**Nota importante**: Esta licencia incluye restricciones comerciales hasta 2029, después de lo cual se convierte en GPL v2+.
+Uso, modificación y redistribución libres (también comercial), con atribución y
+concesión explícita de patentes — la licencia estándar del ecosistema ML.
 
 ## 📧 Contacto
 
-- **Issues**: [GitHub Issues](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/discussions)
+- **Issues**: [GitHub Issues](https://github.com/esraderey/mnemosys/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/esraderey/mnemosys/discussions)
 - **Email**: msc.framework@gmail.com
-- **Documentación**: [Wiki](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/wiki)
+- **Documentación**: [Wiki](https://github.com/esraderey/mnemosys/wiki)
 
-## 🛡️ Mejoras de Seguridad v2.0
+## 🛡️ Seguridad del diseño
 
 ### 🔒 **Vulnerabilidades Eliminadas**
 - **❌ Pickle eliminado** - Sin vulnerabilidades de deserialización

@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mnemosys"
-version = "1.0.0"
+version = "1.0.1"
 description = "MNEMOSYS (Memoria Neural Estructurada Mórfica con Orquestación de Síntesis Y Seguridad) - Motor de memoria computacional con síntesis determinista, compresión tensorial real, cifrado en reposo e inferencia con pesos comprimidos. El paquete Python conserva el import histórico: import mneme"
 readme = "README.md"
-license = {text = "BUSL-1.1"}
+license = {text = "Apache-2.0"}
 authors = [
     {name = "Esraderey", email = "msc.framework@gmail.com"},
     {name = "Raul Cruz Acosta", email = "raul.cruz.acosta@example.com"}
@@ -23,7 +23,7 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "License :: Other/Proprietary License",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -85,12 +85,12 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica"
-Documentation = "https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/wiki"
-Repository = "https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica.git"
-Issues = "https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues"
-Discussions = "https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/discussions"
-Changelog = "https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/esraderey/mnemosys"
+Documentation = "https://github.com/esraderey/mnemosys/wiki"
+Repository = "https://github.com/esraderey/mnemosys.git"
+Issues = "https://github.com/esraderey/mnemosys/issues"
+Discussions = "https://github.com/esraderey/mnemosys/discussions"
+Changelog = "https://github.com/esraderey/mnemosys/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]
