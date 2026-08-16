@@ -227,9 +227,9 @@
 - **Raul Cruz Acosta**: msc.framework@gmail.com
 
 ### **Comunidad**
-- **GitHub**: [MNEME Repository](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
-- **Discussions**: [GitHub Discussions](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/discussions)
-- **Issues**: [GitHub Issues](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues)
+- **GitHub**: [MNEME Repository](https://github.com/esraderey/mnemosys)
+- **Discussions**: [GitHub Discussions](https://github.com/esraderey/mnemosys/discussions)
+- **Issues**: [GitHub Issues](https://github.com/esraderey/mnemosys/issues)
 
 ---
 

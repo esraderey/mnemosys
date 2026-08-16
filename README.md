@@ -211,7 +211,7 @@ src/mneme/
 ## 🏗️ Estructura del Proyecto
 
 ```
-MNEME---Motor-de-Memoria-Neural-M-rfica/
+mnemosys/
 ├── src/mneme/                    # Código fuente modular
 │   ├── __init__.py              # Exports principales
 │   ├── mneme_core.py            # Módulo principal seguro
@@ -262,7 +262,7 @@ pip install mnemosys[gpu,security]
 ```bash
 # Clonar el repositorio
 git clone https://github.com/esraderey/mnemosys.git
-cd MNEME---Motor-de-Memoria-Neural-M-rfica
+cd mnemosys
 
 # Instalar dependencias
 pip install -r requirements.txt

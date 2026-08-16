@@ -3,8 +3,8 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
 [![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL--1.1-blue.svg)](https://opensource.org/licenses/BUSL-1.1)
-[![Security](https://img.shields.io/badge/Security-Enterprise-green.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
-[![Performance](https://img.shields.io/badge/Performance-Optimized-orange.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
+[![Security](https://img.shields.io/badge/Security-Enterprise-green.svg)](https://github.com/esraderey/mnemosys)
+[![Performance](https://img.shields.io/badge/Performance-Optimized-orange.svg)](https://github.com/esraderey/mnemosys)
 
 **MNEME** (pronunciado *"neme"*) redefine la memoria computacional mediante un motor neural inspirado en estructuras biológicas.  
 En lugar de almacenar datos en ubicaciones fijas, **MNEME guarda descriptores compactos y generativos** que reconstruyen el contenido de forma determinista, como si fueran recuerdos que emergen bajo demanda.
@@ -101,8 +101,8 @@ pip install mneme
 ### Instalación completa con todas las funcionalidades
 
 ```bash
-git clone https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica.git
-cd MNEME---Motor-de-Memoria-Neural-M-rfica
+git clone https://github.com/esraderey/mnemosys.git
+cd mnemosys
 pip install -r requirements.txt
 pip install -e .[all]
 ```
@@ -373,7 +373,7 @@ report = optimizer.get_optimization_report()
   title = {MNEME: Motor de Memoria Neural Mórfica},
   author = {Esraderey and Raul Cruz Acosta},
   year = {2025},
-  url = {https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica},
+  url = {https://github.com/esraderey/mnemosys},
   note = {Sistema avanzado de memoria computacional con síntesis determinista}
 }
 ```
@@ -397,10 +397,10 @@ Business Source License 1.1 (BUSL-1.1) – ver [LICENSE](LICENSE)
 
 ## 📧 Contacto
 
-- **Issues**: [GitHub Issues](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/discussions)
+- **Issues**: [GitHub Issues](https://github.com/esraderey/mnemosys/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/esraderey/mnemosys/discussions)
 - **Email**: msc.framework@gmail.com
-- **Documentación**: [Wiki](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/wiki)
+- **Documentación**: [Wiki](https://github.com/esraderey/mnemosys/wiki)
 
 ## 🏆 Reconocimientos
 

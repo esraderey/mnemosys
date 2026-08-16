@@ -18,8 +18,8 @@ MNEME v2.0 incluye funcionalidades avanzadas que requieren consideraciones espec
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica.git
-cd MNEME---Motor-de-Memoria-Neural-M-rfica
+git clone https://github.com/esraderey/mnemosys.git
+cd mnemosys
 
 # Instalar dependencias
 pip install -r requirements.txt
@@ -300,8 +300,8 @@ Para reportar vulnerabilidades de seguridad:
 
 ### Comunidad
 
-- [GitHub Discussions](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/discussions)
-- [GitHub Issues](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues)
+- [GitHub Discussions](https://github.com/esraderey/mnemosys/discussions)
+- [GitHub Issues](https://github.com/esraderey/mnemosys/issues)
 - Email: msc.framework@gmail.com
 
 ## 🎯 Roadmap de Contribuciones

@@ -30,10 +30,10 @@ academic:
 # Community support
 community:
   - type: 'Community Support'
-    url: 'https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/discussions'
+    url: 'https://github.com/esraderey/mnemosys/discussions'
   - type: 'Bug Reports'
-    url: 'https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues'
+    url: 'https://github.com/esraderey/mnemosys/issues'
   - type: 'Feature Requests'
-    url: 'https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues/new?template=feature_request.md'
+    url: 'https://github.com/esraderey/mnemosys/issues/new?template=feature_request.md'
   - type: 'Security Reports'
-    url: 'https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/issues/new?template=security_report.md'
+    url: 'https://github.com/esraderey/mnemosys/issues/new?template=security_report.md'
