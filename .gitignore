@@ -1,0 +1,30 @@
+# Bytecode y caches de Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Almacén de datos de MNEMOSYS (artefactos de ejecución, no código)
+mneme_storage/
+
+# Empaquetado y builds
+build/
+dist/
+*.egg-info/
+
+# Cobertura
+.coverage
+htmlcov/
+coverage.xml
+
+# Entornos
+.venv/
+venv/
+env/
+
+# IDEs y SO
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

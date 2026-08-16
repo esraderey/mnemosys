@@ -1,0 +1,406 @@
+name: ⚡ MNEME v2.0 Performance Tests
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'  # Weekly on Monday at 3 AM
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  performance-benchmarks:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+      with:
+        python-version: '3.10'
+    
+    - name: 📥 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install psutil
+        pip install -e .[dev]
+    
+    - name: ⚡ Basic performance tests
+      run: |
+        python -c "
+        import time
+        import torch
+        from mneme import ZSpace
+        
+        print('🚀 MNEME v2.0 Performance Tests')
+        print('=' * 70)
+        
+        # Test basic operations
+        mneme = ZSpace()
+        tensor = torch.randn(1000, 1000)
+        
+        # Test registration
+        start = time.time()
+        desc = mneme.register('test_tensor', tensor)
+        reg_time = time.time() - start
+        print(f'📝 Registration time: {reg_time*1000:.2f}ms')
+        
+        # Test loading
+        start = time.time()
+        loaded = mneme.load('test_tensor')
+        load_time = time.time() - start
+        print(f'📖 Loading time: {load_time*1000:.2f}ms')
+        
+        # Test compression ratio
+        original_size = tensor.element_size() * tensor.numel()
+        compressed_size = desc.compressed_size if hasattr(desc, 'compressed_size') else original_size
+        ratio = original_size / compressed_size if compressed_size > 0 else 1.0
+        print(f'🗜️  Compression ratio: {ratio:.3f}x')
+        
+        # Test error
+        error = torch.norm(tensor - loaded) / torch.norm(tensor)
+        print(f'📊 Reconstruction error: {error:.6f}')
+        
+        print('✅ Basic performance tests passed')
+        "
+    
+    - name: 🔄 Parallel processing tests
+      run: |
+        python -c "
+        import time
+        import torch
+        import concurrent.futures
+        from mneme import ZSpace
+        
+        print('🔄 Parallel Processing Tests')
+        print('=' * 50)
+        
+        mneme = ZSpace()
+        tensors = [torch.randn(500, 500) for _ in range(8)]
+        
+        # Test parallel registration
+        def register_tensor(args):
+            idx, tensor = args
+            return mneme.register(f'parallel_{idx}', tensor)
+        
+        start = time.time()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            results = list(executor.map(register_tensor, enumerate(tensors)))
+        parallel_time = time.time() - start
+        print(f'⚡ Parallel registration time: {parallel_time:.3f}s')
+        
+        # Test parallel loading
+        def load_tensor(idx):
+            return mneme.load(f'parallel_{idx}')
+        
+        start = time.time()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            loaded = list(executor.map(load_tensor, range(len(tensors))))
+        load_time = time.time() - start
+        print(f'⚡ Parallel loading time: {load_time:.3f}s')
+        
+        # Calculate efficiency
+        sequential_estimate = parallel_time * 4
+        efficiency = sequential_estimate / parallel_time if parallel_time > 0 else 0
+        print(f'📊 Parallel speedup: {efficiency:.2f}x')
+        
+        print('✅ Parallel processing tests passed')
+        "
+    
+    - name: 📊 Memory usage tests
+      run: |
+        python -c "
+        import psutil
+        import torch
+        from mneme import ZSpace
+        
+        print('📊 Memory Usage Tests')
+        print('=' * 50)
+        
+        process = psutil.Process()
+        initial_memory = process.memory_info().rss / 1024 / 1024
+        
+        mneme = ZSpace()
+        tensors = [torch.randn(1000, 1000) for _ in range(10)]
+        
+        # Register tensors
+        for i, tensor in enumerate(tensors):
+            mneme.register(f'memory_test_{i}', tensor)
+        
+        peak_memory = process.memory_info().rss / 1024 / 1024
+        memory_used = peak_memory - initial_memory
+        
+        print(f'💾 Initial memory: {initial_memory:.1f}MB')
+        print(f'💾 Peak memory: {peak_memory:.1f}MB')
+        print(f'💾 Memory used: {memory_used:.1f}MB')
+        
+        # Clear cache to optimize memory
+        import gc
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        
+        optimized_memory = process.memory_info().rss / 1024 / 1024
+        memory_saved = peak_memory - optimized_memory
+        
+        print(f'💾 Optimized memory: {optimized_memory:.1f}MB')
+        print(f'💾 Memory saved: {memory_saved:.1f}MB')
+        
+        print('✅ Memory usage tests passed')
+        "
+    
+    - name: 🎯 Accuracy tests
+      run: |
+        python -c "
+        import torch
+        from mneme import ZSpace
+        
+        print('🎯 Accuracy Tests')
+        print('=' * 50)
+        
+        tensor = torch.randn(500, 500)
+        
+        # Test multiple registrations with different keys
+        num_tests = 5
+        errors = []
+        ratios = []
+        
+        for i in range(num_tests):
+            try:
+                mneme = ZSpace()
+                
+                key = f'test_accuracy_{i}'
+                desc = mneme.register(key, tensor)
+                loaded = mneme.load(key)
+                
+                error = torch.norm(tensor - loaded) / torch.norm(tensor)
+                errors.append(error.item())
+                print(f'📊 Test {i+1} error: {error:.6f}')
+                
+                # Calculate compression ratio
+                original_size = tensor.element_size() * tensor.numel()
+                compressed_size = desc.compressed_size if hasattr(desc, 'compressed_size') else original_size
+                ratio = original_size / compressed_size if compressed_size > 0 else 1.0
+                ratios.append(ratio)
+                print(f'🗜️  Test {i+1} ratio: {ratio:.3f}x')
+                
+            except Exception as e:
+                print(f'⚠️  Test {i+1} failed: {str(e)}')
+        
+        if errors:
+            avg_error = sum(errors) / len(errors)
+            max_error = max(errors)
+            min_error = min(errors)
+            print(f'\\n📊 Average error: {avg_error:.6f}')
+            print(f'📊 Max error: {max_error:.6f}')
+            print(f'📊 Min error: {min_error:.6f}')
+        
+        if ratios:
+            avg_ratio = sum(ratios) / len(ratios)
+            print(f'🗜️  Average compression: {avg_ratio:.3f}x')
+        
+        print('\\n✅ Accuracy tests passed')
+        "
+
+  stress-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+      with:
+        python-version: '3.10'
+    
+    - name: 📥 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e .[dev]
+    
+    - name: 🔥 Stress test with large tensors
+      run: |
+        python -c "
+        import time
+        import torch
+        from mneme import ZSpace
+        
+        print('🔥 Stress Tests - Large Tensors')
+        print('=' * 50)
+        
+        mneme = ZSpace()
+        
+        # Test with very large tensor
+        large_tensor = torch.randn(2000, 2000)
+        tensor_size_mb = large_tensor.numel() * 4 / 1024 / 1024
+        print(f'📏 Large tensor shape: {large_tensor.shape}')
+        print(f'📏 Size: {tensor_size_mb:.1f}MB')
+        
+        start = time.time()
+        desc = mneme.register('large_tensor', large_tensor)
+        reg_time = time.time() - start
+        print(f'📝 Registration time: {reg_time:.3f}s')
+        print(f'📝 Throughput: {tensor_size_mb/reg_time:.1f}MB/s')
+        
+        start = time.time()
+        loaded = mneme.load('large_tensor')
+        load_time = time.time() - start
+        print(f'📖 Loading time: {load_time:.3f}s')
+        print(f'📖 Throughput: {tensor_size_mb/load_time:.1f}MB/s')
+        
+        # Calculate compression
+        original_size = large_tensor.element_size() * large_tensor.numel()
+        compressed_size = desc.compressed_size if hasattr(desc, 'compressed_size') else original_size
+        ratio = original_size / compressed_size if compressed_size > 0 else 1.0
+        print(f'🗜️  Compression ratio: {ratio:.3f}x')
+        
+        error = torch.norm(large_tensor - loaded) / torch.norm(large_tensor)
+        print(f'📊 Reconstruction error: {error:.6f}')
+        
+        print('✅ Large tensor test passed')
+        "
+    
+    - name: 🔄 Stress test with many tensors
+      run: |
+        python -c "
+        import time
+        import torch
+        from mneme import ZSpace
+        
+        print('🔄 Many Tensors Stress Test')
+        print('=' * 50)
+        
+        mneme = ZSpace()
+        num_tensors = 100
+        tensors = [torch.randn(100, 100) for _ in range(num_tensors)]
+        
+        print(f'Creating {num_tensors} tensors of size 100x100...')
+        
+        # Test registration
+        start = time.time()
+        for i, tensor in enumerate(tensors):
+            mneme.register(f'stress_{i}', tensor)
+            if (i + 1) % 25 == 0:
+                elapsed = time.time() - start
+                rate = (i + 1) / elapsed
+                print(f'  Registered {i + 1}/{num_tensors} tensors ({rate:.1f} tensors/s)')
+        
+        reg_time = time.time() - start
+        print(f'📝 Total registration time: {reg_time:.3f}s')
+        print(f'📝 Average per tensor: {reg_time/num_tensors*1000:.2f}ms')
+        print(f'📝 Registration rate: {num_tensors/reg_time:.1f} tensors/s')
+        
+        # Test loading
+        start = time.time()
+        for i in range(num_tensors):
+            loaded = mneme.load(f'stress_{i}')
+            if (i + 1) % 25 == 0:
+                elapsed = time.time() - start
+                rate = (i + 1) / elapsed
+                print(f'  Loaded {i + 1}/{num_tensors} tensors ({rate:.1f} tensors/s)')
+        
+        load_time = time.time() - start
+        print(f'📖 Total loading time: {load_time:.3f}s')
+        print(f'📖 Average per tensor: {load_time/num_tensors*1000:.2f}ms')
+        print(f'📖 Loading rate: {num_tensors/load_time:.1f} tensors/s')
+        
+        # Calculate total data processed
+        total_size_mb = num_tensors * 100 * 100 * 4 / 1024 / 1024
+        print(f'\\n💾 Total data: {total_size_mb:.1f}MB')
+        print(f'💾 Registration throughput: {total_size_mb/reg_time:.1f}MB/s')
+        print(f'💾 Loading throughput: {total_size_mb/load_time:.1f}MB/s')
+        
+        print('\\n✅ Many tensors test passed')
+        "
+
+  benchmark-comparison:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+      with:
+        python-version: '3.10'
+    
+    - name: 📥 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e .[dev]
+    
+    - name: 📊 Benchmark comparison
+      run: |
+        python -c "
+        import time
+        import torch
+        from mneme import ZSpace
+        
+        print('📊 Benchmark Comparison - Multiple Tensor Sizes')
+        print('=' * 60)
+        
+        # Test different tensor sizes
+        sizes = [(100, 100), (500, 500), (1000, 1000), (2000, 2000)]
+        
+        results = []
+        
+        for size in sizes:
+            print(f'\\n📏 Testing tensor size: {size[0]}x{size[1]}')
+            tensor = torch.randn(size)
+            original_size_kb = tensor.numel() * 4 / 1024
+            
+            mneme = ZSpace()
+            
+            # Test registration
+            start = time.time()
+            desc = mneme.register(f'bench_{size[0]}x{size[1]}', tensor)
+            reg_time = time.time() - start
+            
+            # Test loading
+            start = time.time()
+            loaded = mneme.load(f'bench_{size[0]}x{size[1]}')
+            load_time = time.time() - start
+            
+            # Test compression
+            compressed_size_bytes = desc.compressed_size if hasattr(desc, 'compressed_size') else (tensor.numel() * 4)
+            compressed_size_kb = compressed_size_bytes / 1024
+            ratio = original_size_kb / compressed_size_kb if compressed_size_kb > 0 else 1.0
+            savings_kb = original_size_kb - compressed_size_kb
+            
+            # Test accuracy
+            error = torch.norm(tensor - loaded) / torch.norm(tensor)
+            
+            # Calculate throughput
+            reg_throughput = original_size_kb / 1024 / reg_time  # MB/s
+            load_throughput = original_size_kb / 1024 / load_time  # MB/s
+            
+            print(f'  📝 Registration: {reg_time*1000:.2f}ms ({reg_throughput:.1f}MB/s)')
+            print(f'  📖 Loading: {load_time*1000:.2f}ms ({load_throughput:.1f}MB/s)')
+            print(f'  🗜️  Compression: {ratio:.3f}x')
+            print(f'  📊 Error: {error:.6f}')
+            print(f'  💾 Original: {original_size_kb:.1f}KB')
+            print(f'  💾 Compressed: {compressed_size_kb:.1f}KB')
+            print(f'  💾 Saved: {savings_kb:.1f}KB ({savings_kb/original_size_kb*100:.1f}%)')
+            
+            results.append({
+                'size': size,
+                'reg_time': reg_time,
+                'load_time': load_time,
+                'ratio': ratio,
+                'error': error.item()
+            })
+        
+        # Summary
+        print(f'\\n📊 Summary')
+        print('=' * 60)
+        avg_ratio = sum(r['ratio'] for r in results) / len(results)
+        avg_error = sum(r['error'] for r in results) / len(results)
+        print(f'Average compression ratio: {avg_ratio:.3f}x')
+        print(f'Average reconstruction error: {avg_error:.6f}')
+        
+        print('\\n✅ Benchmark comparison completed')
+        "

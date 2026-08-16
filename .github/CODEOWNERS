@@ -1,0 +1,49 @@
+# MNEME v2.0.1 - Code Owners
+# This file defines who is responsible for different parts of the codebase
+
+# Global owners
+* @esraderey
+
+# Core modules
+src/mneme/mneme_core_fixed.py @esraderey
+src/mneme/mneme_core.py @esraderey
+src/mneme/__init__.py @esraderey
+
+# Security modules
+src/mneme/mneme_security_core.py @esraderey
+
+# Storage modules
+src/mneme/mneme_storage_core.py @esraderey
+
+# PyTorch integration
+src/mneme/mneme_torch.py @esraderey
+
+# Optimization modules
+src/mneme/mneme_optimization.py @esraderey
+
+# Documentation
+README.md @esraderey
+CHANGELOG.md @esraderey
+CONTRIBUTING.md @esraderey
+docs/ @esraderey
+
+# Configuration files
+pyproject.toml @esraderey
+setup.py @esraderey
+requirements.txt @esraderey
+Makefile @esraderey
+config.example.env @esraderey
+
+# GitHub workflows
+.github/workflows/ @esraderey
+.github/dependabot.yml @esraderey
+.github/CODEOWNERS @esraderey
+
+# Examples
+examples/ @esraderey
+
+# Tests
+tests/ @esraderey
+
+# Scripts
+scripts/ @esraderey

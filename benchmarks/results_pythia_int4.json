@@ -1,0 +1,19 @@
+{
+  "model": "EleutherAI/pythia-410m",
+  "dataset": "wikitext/wikitext-2-raw-v1",
+  "seq_len": 1024,
+  "stride": 512,
+  "group_size": 128,
+  "device": "cuda",
+  "dtype": "torch.float16",
+  "baseline_ppl": 15.07,
+  "int4_ppl": 24.25,
+  "delta_ppl": 9.18,
+  "ppl_increase_pct": 60.9,
+  "layers_quantized": 97,
+  "layers_skipped": 0,
+  "avg_compression_ratio": 0.3632,
+  "baseline_eval_time_s": 23.6,
+  "int4_eval_time_s": 23.0,
+  "quantization_time_s": 41.8
+}
