@@ -1,9 +1,41 @@
 # Changelog
 
-Todos los cambios notables de MNEME se documentan en este archivo.
+Todos los cambios notables de MNEMOSYS (antes MNEME) se documentan en este archivo.
 
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2026-08-16
+
+Primera release pública, bajo el nombre nuevo **MNEMOSYS** (Memoria Neural
+Estructurada Mórfica con Orquestación de Síntesis Y Seguridad). La numeración
+pública arranca aquí: las versiones 2.x listadas abajo son la historia interna
+del motor cuando se llamaba MNEME y nunca se publicaron en PyPI.
+
+### ✨ Añadido
+- **Turbo de inferencia comprimida** (`mneme_lazy.py`): `ZLinearTurbo` y
+  `compress_model_turbo` ejecutan modelos con el peso comprimido residente —
+  SVD factorizado sin materializar el peso (VRAM residente 20.5 % del denso,
+  pico de forward ÷4.9, latencia a la par, medido en 8×Linear 2048²) y
+  recompute en backward para INT4/INT8/RAW/TT/CP/Tucker/Sparse. Soporta
+  modelos half/CUDA, `state_dict` completo y pesos podados.
+- **Benchmarks reales** de Pythia-410M sobre WikiText-2 (`benchmarks/`):
+  FP16 PPL 15.07 · GPTQ INT4 19.97 (+32.5 %) · INT4 naive 24.25 (+60.9 %).
+- Batería de anclas de regresión (`tests/test_regresiones_auditoria.py`) y
+  del turbo (`tests/test_turbo.py`): suite completa 134 passed / 0 failed.
+
+### 🔧 Cambiado
+- **Distribución renombrada a `mnemosys`** ("mneme" está ocupado en PyPI); el
+  paquete Python conserva el import histórico `import mneme`.
+- Suelo de Python en 3.10, empaquetado unificado en `pyproject.toml`.
+- README reescrito con métricas medidas y ejemplos contra la API real.
+
+### 🐛 Corregido
+- Offset de cuantización por grupos (corrompía grupos que no cruzan el cero):
+  validado en modelo real — la PPL del INT4 naive pasó de 97.7 a 24.25 con la
+  misma compresión.
+- Cifrado en reposo, firma HMAC, rehidratación no-RAW, sparsity 2:4 cableada,
+  y el resto de la reparación de la auditoría de agosto de 2026.
 
 ## [2.0.1] - 2025-01-27
 

@@ -64,7 +64,7 @@ from .mneme_torch import (
     optimize_system,
 )
 
-__version__ = "3.0.0"
+__version__ = "1.0.0"
 __author__ = "Esraderey and Raul Cruz Acosta"
 __email__ = "msc.framework@gmail.com"
 

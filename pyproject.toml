@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mnemosys"
-version = "2.0.1"
+version = "1.0.0"
 description = "MNEMOSYS (Memoria Neural Estructurada Mórfica con Orquestación de Síntesis Y Seguridad) - Motor de memoria computacional con síntesis determinista, compresión tensorial real, cifrado en reposo e inferencia con pesos comprimidos. El paquete Python conserva el import histórico: import mneme"
 readme = "README.md"
 license = {text = "BUSL-1.1"}

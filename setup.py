@@ -18,7 +18,7 @@ def read_requirements():
 
 setup(
     name="mnemosys",
-    version="2.0.1",
+    version="1.0.0",
     author="Esraderey and Raul Cruz Acosta",
     author_email="msc.framework@gmail.com",
     description="Motor de Memoria Neural Mórfica v2.0 - Sistema avanzado con Safetensors, Locks Granulares y Cache Adaptativo",

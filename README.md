@@ -5,7 +5,7 @@
 [![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL--1.1-blue.svg)](https://opensource.org/licenses/BUSL-1.1)
 [![Security](https://img.shields.io/badge/Security-Enterprise-green.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
 [![Performance](https://img.shields.io/badge/Performance-Optimized-orange.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
-[![Version](https://img.shields.io/badge/Version-2.0.1-purple.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
+[![Version](https://img.shields.io/badge/Version-1.0.0-purple.svg)](https://github.com/esraderey/mnemosys)
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica/actions)
 [![Code Quality](https://img.shields.io/badge/Code%20Quality-A+-green.svg)](https://github.com/esraderey/MNEME---Motor-de-Memoria-Neural-M-rfica)
 
